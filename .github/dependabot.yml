@@ -1,0 +1,17 @@
+# Dependabot раз в месяц проверяет обновления и сам открывает pull request.
+# CI прогонит на нём тесты — останется только посмотреть и смержить.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "ci"
+
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "deps"
