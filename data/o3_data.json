@@ -1,0 +1,3973 @@
+{
+  "cities": [
+    {
+      "name": "Челябинск",
+      "coordinates": [
+        55.159902,
+        61.402554
+      ],
+      "data": [
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 1,
+      "concentration": 3.821698945454545e-08
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 2,
+      "concentration": 4.508444181818181e-08
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 3,
+      "concentration": 5.1951894e-08
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 4,
+      "concentration": 5.605845936363636e-08
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 5,
+      "concentration": 6.016502463636363e-08
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 6,
+      "concentration": 8.256123768181818e-08
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 7,
+      "concentration": 3.92088335e-08
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 8,
+      "concentration": 1.269452450454546e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 9,
+      "concentration": 2.325194295e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 10,
+      "concentration": 4.205615263181818e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 11,
+      "concentration": 6.280884008636363e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 12,
+      "concentration": 9.97515110590909e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 13,
+      "concentration": 1.303448142863636e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 14,
+      "concentration": 1.688109826727273e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 15,
+      "concentration": 2.043222898636364e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 16,
+      "concentration": 2.722599157909091e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 17,
+      "concentration": 3.507952101227272e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 18,
+      "concentration": 4.055534325409091e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 19,
+      "concentration": 4.546729004727272e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 20,
+      "concentration": 4.691883759772727e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 21,
+      "concentration": 4.6880859785e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 22,
+      "concentration": 4.601312391409092e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 23,
+      "concentration": 4.780599386909091e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 24,
+      "concentration": 5.098213788045455e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 25,
+      "concentration": 5.436698839727272e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 26,
+      "concentration": 5.770595924636364e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 27,
+      "concentration": 5.953172086954546e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 28,
+      "concentration": 6.030971276636363e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 29,
+      "concentration": 6.184247798500001e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 30,
+      "concentration": 6.24822109790909e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 31,
+      "concentration": 6.132862298863636e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 32,
+      "concentration": 5.671508213e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 33,
+      "concentration": 5.193590347772727e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 34,
+      "concentration": 4.645236417181818e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 35,
+      "concentration": 4.223952849045454e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 36,
+      "concentration": 3.808326833954545e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 37,
+      "concentration": 3.467812317363637e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 38,
+      "concentration": 2.689826188045455e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 39,
+      "concentration": 2.038149127409091e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 40,
+      "concentration": 1.389621069545454e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 41,
+      "concentration": 1.057473499954546e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 42,
+      "concentration": 1.0168462565e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 43,
+      "concentration": 7.688347756818182e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 44,
+      "concentration": 5.825780847727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 45,
+      "concentration": 6.24225882e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 46,
+      "concentration": 2.999675365e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 47,
+      "concentration": 5.051659460909092e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 48,
+      "concentration": 3.449086388590909e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 49,
+      "concentration": 4.089025974363636e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 50,
+      "concentration": 2.163631162590909e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 51,
+      "concentration": 1.116645282e-06
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 52,
+      "concentration": 3.955868922727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 53,
+      "concentration": 3.955868922727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 54,
+      "concentration": 3.955868922727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 1,
+      "level": 55,
+      "concentration": 3.955868922727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 1,
+      "concentration": 4.17331836923077e-08
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 2,
+      "concentration": 4.834879449999999e-08
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 3,
+      "concentration": 5.496440584615385e-08
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 4,
+      "concentration": 5.9391412e-08
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 5,
+      "concentration": 6.381841911538461e-08
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 6,
+      "concentration": 9.146484238461539e-08
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 7,
+      "concentration": 3.817500261538461e-08
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 8,
+      "concentration": 1.164691460384615e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 9,
+      "concentration": 2.307669853461538e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 10,
+      "concentration": 4.103881143461538e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 11,
+      "concentration": 6.052518961923077e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 12,
+      "concentration": 9.268659882692307e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 13,
+      "concentration": 1.242025337346154e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 14,
+      "concentration": 1.759215636384615e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 15,
+      "concentration": 2.292119701730769e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 16,
+      "concentration": 2.930430250384616e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 17,
+      "concentration": 3.404370781615384e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 18,
+      "concentration": 3.50070120723077e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 19,
+      "concentration": 3.716385339538461e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 20,
+      "concentration": 4.036803121461539e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 21,
+      "concentration": 4.562995618769231e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 22,
+      "concentration": 5.07851872023077e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 23,
+      "concentration": 5.553598262307692e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 24,
+      "concentration": 5.938763881461538e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 25,
+      "concentration": 6.271718050807692e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 26,
+      "concentration": 6.527327479e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 27,
+      "concentration": 6.720106687038462e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 28,
+      "concentration": 6.942118156576923e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 29,
+      "concentration": 7.12457982923077e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 30,
+      "concentration": 6.959230281884615e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 31,
+      "concentration": 6.554497024269231e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 32,
+      "concentration": 5.944262301653846e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 33,
+      "concentration": 5.554779468538462e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 34,
+      "concentration": 5.016500993423078e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 35,
+      "concentration": 4.531147973961538e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 36,
+      "concentration": 3.982624985576923e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 37,
+      "concentration": 3.467728517538461e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 38,
+      "concentration": 2.587118991269231e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 39,
+      "concentration": 1.919907674576923e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 40,
+      "concentration": 1.499319576115385e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 41,
+      "concentration": 1.182461720423077e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 42,
+      "concentration": 1.094457822192308e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 43,
+      "concentration": 8.508550578846154e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 44,
+      "concentration": 8.113860212307692e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 45,
+      "concentration": 5.074196293461538e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 46,
+      "concentration": 6.403176024230769e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 47,
+      "concentration": 8.431574453076923e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 48,
+      "concentration": 4.3049450265e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 49,
+      "concentration": 5.200973663923078e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 50,
+      "concentration": 3.304925354461539e-06
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 51,
+      "concentration": 8.86546255e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 52,
+      "concentration": 2.893629792692308e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 53,
+      "concentration": 2.893629792692308e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 54,
+      "concentration": 2.893629792692308e-07
+    },
+    {
+      "year": 2023,
+      "month": 2,
+      "level": 55,
+      "concentration": 2.893629792692308e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 1,
+      "concentration": 4.567340324e-08
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 2,
+      "concentration": 5.269663516e-08
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 3,
+      "concentration": 5.97198668e-08
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 4,
+      "concentration": 6.474905796e-08
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 5,
+      "concentration": 6.977824712e-08
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 6,
+      "concentration": 1.0150887988e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 7,
+      "concentration": 2.912012728e-08
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 8,
+      "concentration": 2.138469414e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 9,
+      "concentration": 3.9014845584e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 10,
+      "concentration": 5.7139348544e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 11,
+      "concentration": 7.0114717352e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 12,
+      "concentration": 7.5318853988e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 13,
+      "concentration": 8.718487777999999e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 14,
+      "concentration": 1.42107235656e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 15,
+      "concentration": 2.16663632736e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 16,
+      "concentration": 3.0699552008e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 17,
+      "concentration": 3.81946270872e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 18,
+      "concentration": 4.18056075432e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 19,
+      "concentration": 4.49906399808e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 20,
+      "concentration": 4.72235529752e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 21,
+      "concentration": 4.96558752276e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 22,
+      "concentration": 5.21545802256e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 23,
+      "concentration": 5.485459005280001e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 24,
+      "concentration": 5.67179695272e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 25,
+      "concentration": 5.90500416368e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 26,
+      "concentration": 6.3524586586e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 27,
+      "concentration": 6.95022423308e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 28,
+      "concentration": 7.46821666308e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 29,
+      "concentration": 7.93341516328e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 30,
+      "concentration": 7.91908058084e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 31,
+      "concentration": 7.58819047404e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 32,
+      "concentration": 6.7165494512e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 33,
+      "concentration": 5.8829825684e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 34,
+      "concentration": 4.96472121084e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 35,
+      "concentration": 4.1452807636e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 36,
+      "concentration": 3.52583759196e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 37,
+      "concentration": 3.03986903416e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 38,
+      "concentration": 2.24925386636e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 39,
+      "concentration": 1.65976501652e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 40,
+      "concentration": 1.3471166382e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 41,
+      "concentration": 1.08849914568e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 42,
+      "concentration": 9.6015181156e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 43,
+      "concentration": 9.0947096968e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 44,
+      "concentration": 6.562708134800001e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 45,
+      "concentration": 5.6339573956e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 46,
+      "concentration": 1.2331751876e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 47,
+      "concentration": 1.7374611692e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 48,
+      "concentration": 4.39071987556e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 49,
+      "concentration": 5.67791744112e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 50,
+      "concentration": 2.90573798916e-06
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 51,
+      "concentration": 6.665037925599999e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 52,
+      "concentration": 1.8553832144e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 53,
+      "concentration": 1.8553832144e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 54,
+      "concentration": 1.8553832144e-07
+    },
+    {
+      "year": 2023,
+      "month": 3,
+      "level": 55,
+      "concentration": 1.8553832144e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 1,
+      "concentration": 4.49492848e-08
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 2,
+      "concentration": 5.362375584e-08
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 3,
+      "concentration": 6.2298227e-08
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 4,
+      "concentration": 6.792808336e-08
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 5,
+      "concentration": 7.355794084e-08
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 6,
+      "concentration": 1.03049799e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 7,
+      "concentration": 5.689697196e-08
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 8,
+      "concentration": 2.0340741128e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 9,
+      "concentration": 3.5172499188e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 10,
+      "concentration": 4.9347724716e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 11,
+      "concentration": 6.0580707448e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 12,
+      "concentration": 6.7639102096e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 13,
+      "concentration": 8.153861892e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 14,
+      "concentration": 1.31713539536e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 15,
+      "concentration": 1.90369946264e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 16,
+      "concentration": 2.66193039352e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 17,
+      "concentration": 3.35611096488e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 18,
+      "concentration": 3.7213420546e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 19,
+      "concentration": 4.04393114876e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 20,
+      "concentration": 4.4088501454e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 21,
+      "concentration": 4.83607864228e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 22,
+      "concentration": 5.25056775592e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 23,
+      "concentration": 5.73592273224e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 24,
+      "concentration": 6.344246485200001e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 25,
+      "concentration": 6.95441403876e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 26,
+      "concentration": 7.36462639912e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 27,
+      "concentration": 7.7080510892e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 28,
+      "concentration": 7.7479548236e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 29,
+      "concentration": 7.70112459572e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 30,
+      "concentration": 7.19897756416e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 31,
+      "concentration": 6.64731829596e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 32,
+      "concentration": 5.830176432919999e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 33,
+      "concentration": 5.06645212232e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 34,
+      "concentration": 4.34885660988e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 35,
+      "concentration": 3.68232796064e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 36,
+      "concentration": 3.27099152852e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 37,
+      "concentration": 2.89462456744e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 38,
+      "concentration": 2.21463460096e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 39,
+      "concentration": 1.75820141072e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 40,
+      "concentration": 1.44172408228e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 41,
+      "concentration": 1.23430582096e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 42,
+      "concentration": 1.02074580348e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 43,
+      "concentration": 9.8411489488e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 44,
+      "concentration": 8.0759663712e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 45,
+      "concentration": 4.1457161092e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 46,
+      "concentration": 8.940498044e-08
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 47,
+      "concentration": 1.06963370584e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 48,
+      "concentration": 4.44540580188e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 49,
+      "concentration": 6.55290546776e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 50,
+      "concentration": 3.74239507204e-06
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 51,
+      "concentration": 4.9845257992e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 52,
+      "concentration": 1.1699435388e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 53,
+      "concentration": 1.1699435388e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 54,
+      "concentration": 1.1699435388e-07
+    },
+    {
+      "year": 2023,
+      "month": 4,
+      "level": 55,
+      "concentration": 1.1699435388e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 1,
+      "concentration": 3.933771525e-08
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 2,
+      "concentration": 5.017936058333333e-08
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 3,
+      "concentration": 6.102100508333333e-08
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 4,
+      "concentration": 6.864804220833334e-08
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 5,
+      "concentration": 7.627507954166666e-08
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 6,
+      "concentration": 1.02554525875e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 7,
+      "concentration": 6.508355216666667e-08
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 8,
+      "concentration": 2.162623321666666e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 9,
+      "concentration": 3.639438462916667e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 10,
+      "concentration": 4.997642430833334e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 11,
+      "concentration": 5.943672256666667e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 12,
+      "concentration": 6.29706392e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 13,
+      "concentration": 7.420801560416666e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 14,
+      "concentration": 1.250283863333333e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 15,
+      "concentration": 1.830414599208333e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 16,
+      "concentration": 2.434491743041667e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 17,
+      "concentration": 2.920906060416667e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 18,
+      "concentration": 3.356990854791666e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 19,
+      "concentration": 3.94885123e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 20,
+      "concentration": 4.61138724475e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 21,
+      "concentration": 5.333883033625e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 22,
+      "concentration": 6.094051495083333e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 23,
+      "concentration": 6.642216211125e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 24,
+      "concentration": 6.894713256583334e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 25,
+      "concentration": 7.214275077208333e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 26,
+      "concentration": 7.432794556416667e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 27,
+      "concentration": 7.7243909875e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 28,
+      "concentration": 7.690410560208332e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 29,
+      "concentration": 7.560359847458334e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 30,
+      "concentration": 6.93883184025e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 31,
+      "concentration": 6.223835479624999e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 32,
+      "concentration": 5.371273497666666e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 33,
+      "concentration": 4.581566486166667e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 34,
+      "concentration": 3.96721021425e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 35,
+      "concentration": 3.415263364583333e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 36,
+      "concentration": 3.071043532166667e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 37,
+      "concentration": 2.666375261666667e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 38,
+      "concentration": 2.146699335083333e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 39,
+      "concentration": 1.682927347666667e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 40,
+      "concentration": 1.304960169541667e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 41,
+      "concentration": 1.146780157041667e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 42,
+      "concentration": 9.4359134675e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 43,
+      "concentration": 9.710190004583333e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 44,
+      "concentration": 6.12970462625e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 45,
+      "concentration": 4.083819555e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 46,
+      "concentration": 6.576033716666667e-08
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 47,
+      "concentration": 4.775112254166667e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 48,
+      "concentration": 2.403259774208334e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 49,
+      "concentration": 3.093253174708334e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 50,
+      "concentration": 2.063278006583333e-06
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 51,
+      "concentration": 3.539836677916667e-07
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 52,
+      "concentration": 6.725634258333334e-08
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 53,
+      "concentration": 6.725634258333334e-08
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 54,
+      "concentration": 6.725634258333334e-08
+    },
+    {
+      "year": 2023,
+      "month": 5,
+      "level": 55,
+      "concentration": 6.725634258333334e-08
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 1,
+      "concentration": 3.170188326923077e-08
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 2,
+      "concentration": 4.484282842307692e-08
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 3,
+      "concentration": 5.798377342307693e-08
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 4,
+      "concentration": 6.834386634615384e-08
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 5,
+      "concentration": 7.870396003846153e-08
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 6,
+      "concentration": 1.009739092692308e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 7,
+      "concentration": 9.847362776923077e-08
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 8,
+      "concentration": 2.375997558846154e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 9,
+      "concentration": 3.646436151153846e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 10,
+      "concentration": 4.807503673846154e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 11,
+      "concentration": 5.583173008076923e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 12,
+      "concentration": 6.670931458461539e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 13,
+      "concentration": 8.159132939230769e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 14,
+      "concentration": 1.216821525230769e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 15,
+      "concentration": 1.6843340605e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 16,
+      "concentration": 2.406607625038462e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 17,
+      "concentration": 2.998887837807693e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 18,
+      "concentration": 3.351533240884615e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 19,
+      "concentration": 3.8085281455e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 20,
+      "concentration": 4.494759449615385e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 21,
+      "concentration": 5.253097872153846e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 22,
+      "concentration": 6.003096936692307e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 23,
+      "concentration": 6.689272193153846e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 24,
+      "concentration": 7.048209489192308e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 25,
+      "concentration": 7.359216851923077e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 26,
+      "concentration": 7.495372249038461e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 27,
+      "concentration": 7.69435889826923e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 28,
+      "concentration": 7.530744824192308e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 29,
+      "concentration": 7.255029878730769e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 30,
+      "concentration": 6.630325917538462e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 31,
+      "concentration": 5.960809123576923e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 32,
+      "concentration": 5.157632865807692e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 33,
+      "concentration": 4.403065321846154e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 34,
+      "concentration": 3.834821786076923e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 35,
+      "concentration": 3.299877378692308e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 36,
+      "concentration": 2.949356913846154e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 37,
+      "concentration": 2.642199765884615e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 38,
+      "concentration": 2.074609605846154e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 39,
+      "concentration": 1.544810131038461e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 40,
+      "concentration": 1.341867451115385e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 41,
+      "concentration": 1.042632076384615e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 42,
+      "concentration": 9.496923836153847e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 43,
+      "concentration": 7.582157743846154e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 44,
+      "concentration": 4.069976555e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 45,
+      "concentration": 3.512902803846154e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 46,
+      "concentration": 1.874019232692308e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 47,
+      "concentration": 8.819950153076923e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 48,
+      "concentration": 1.293858022038462e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 49,
+      "concentration": 2.588916273615384e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 50,
+      "concentration": 2.232692077269231e-06
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 51,
+      "concentration": 2.640141545e-07
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 52,
+      "concentration": 3.71369928076923e-08
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 53,
+      "concentration": 3.71369928076923e-08
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 54,
+      "concentration": 3.71369928076923e-08
+    },
+    {
+      "year": 2023,
+      "month": 6,
+      "level": 55,
+      "concentration": 3.71369928076923e-08
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 1,
+      "concentration": 2.872720976190476e-08
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 2,
+      "concentration": 4.182521747619048e-08
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 3,
+      "concentration": 5.492322523809524e-08
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 4,
+      "concentration": 6.64637899047619e-08
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 5,
+      "concentration": 7.800435423809523e-08
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 6,
+      "concentration": 9.703045980952381e-08
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 7,
+      "concentration": 1.554667734761905e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 8,
+      "concentration": 2.263002690476191e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 9,
+      "concentration": 2.918974609523809e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 10,
+      "concentration": 3.468551638095238e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 11,
+      "concentration": 3.73480749047619e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 12,
+      "concentration": 4.820695703809524e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 13,
+      "concentration": 6.578206596190476e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 14,
+      "concentration": 1.080115905190476e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 15,
+      "concentration": 1.532621966095238e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 16,
+      "concentration": 2.155201606095238e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 17,
+      "concentration": 2.653476886333333e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 18,
+      "concentration": 3.100632056761905e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 19,
+      "concentration": 3.774896770619047e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 20,
+      "concentration": 4.62291771847619e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 21,
+      "concentration": 5.32973154752381e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 22,
+      "concentration": 5.828065262714287e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 23,
+      "concentration": 6.407630800285714e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 24,
+      "concentration": 6.865818055190476e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 25,
+      "concentration": 7.284278169666667e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 26,
+      "concentration": 7.447658563714286e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 27,
+      "concentration": 7.612248239047619e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 28,
+      "concentration": 7.47610965847619e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 29,
+      "concentration": 7.251235967428571e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 30,
+      "concentration": 6.670396660857142e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 31,
+      "concentration": 6.067625149380953e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 32,
+      "concentration": 5.317484768333333e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 33,
+      "concentration": 4.570797933619048e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 34,
+      "concentration": 3.977163595619047e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 35,
+      "concentration": 3.449986674476191e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 36,
+      "concentration": 3.132359573857143e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 37,
+      "concentration": 2.750065310285714e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 38,
+      "concentration": 2.156303767571429e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 39,
+      "concentration": 1.686603105666667e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 40,
+      "concentration": 1.352602967380952e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 41,
+      "concentration": 1.099243823952381e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 42,
+      "concentration": 1.043496343333333e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 43,
+      "concentration": 6.947861208571429e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 44,
+      "concentration": 6.987303573333333e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 45,
+      "concentration": 1.474182383809524e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 46,
+      "concentration": 2.284990793809524e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 47,
+      "concentration": 2.284010677619048e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 48,
+      "concentration": 2.306208706333333e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 49,
+      "concentration": 3.441813029428572e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 50,
+      "concentration": 2.671498484619047e-06
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 51,
+      "concentration": 2.87592803047619e-07
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 52,
+      "concentration": 3.968683576190476e-08
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 53,
+      "concentration": 3.968683576190476e-08
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 54,
+      "concentration": 3.968683576190476e-08
+    },
+    {
+      "year": 2023,
+      "month": 7,
+      "level": 55,
+      "concentration": 3.968683576190476e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 1,
+      "concentration": 2.829162503703704e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 2,
+      "concentration": 4.121372977777778e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 3,
+      "concentration": 5.413583455555555e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 4,
+      "concentration": 6.393730096296297e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 5,
+      "concentration": 7.37387667037037e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 6,
+      "concentration": 8.985449596296296e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 7,
+      "concentration": 8.020295696296295e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 8,
+      "concentration": 1.732195243333333e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 9,
+      "concentration": 2.530255267037037e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 10,
+      "concentration": 3.382592610370371e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 11,
+      "concentration": 4.072813781851852e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 12,
+      "concentration": 5.660928607407408e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 13,
+      "concentration": 7.422662836666667e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 14,
+      "concentration": 1.138552555074074e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 15,
+      "concentration": 1.590504868814815e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 16,
+      "concentration": 2.137273853481481e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 17,
+      "concentration": 2.429414128814815e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 18,
+      "concentration": 2.63247708662963e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 19,
+      "concentration": 3.119824273e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 20,
+      "concentration": 3.937171716925926e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 21,
+      "concentration": 4.867256275481481e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 22,
+      "concentration": 5.689312830370371e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 23,
+      "concentration": 6.436866206814815e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 24,
+      "concentration": 6.859323026185185e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 25,
+      "concentration": 7.17778326962963e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 26,
+      "concentration": 7.352534272185185e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 27,
+      "concentration": 7.556671419037037e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 28,
+      "concentration": 7.515891984185185e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 29,
+      "concentration": 7.403711909592593e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 30,
+      "concentration": 6.933716627481482e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 31,
+      "concentration": 6.432525929592593e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 32,
+      "concentration": 5.65281576811111e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 33,
+      "concentration": 4.856365598666667e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 34,
+      "concentration": 4.170977616814815e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 35,
+      "concentration": 3.586344628592593e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 36,
+      "concentration": 3.256374687555556e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 37,
+      "concentration": 2.866582791333333e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 38,
+      "concentration": 2.226352526777778e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 39,
+      "concentration": 1.762594925592592e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 40,
+      "concentration": 1.360676629333333e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 41,
+      "concentration": 1.15692707237037e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 42,
+      "concentration": 1.026866535185185e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 43,
+      "concentration": 7.791574032222222e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 44,
+      "concentration": 4.545280560370371e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 45,
+      "concentration": 4.385757209629629e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 46,
+      "concentration": 1.001971356666667e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 47,
+      "concentration": 1.299760521481481e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 48,
+      "concentration": 1.651916756851852e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 49,
+      "concentration": 4.346081511777778e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 50,
+      "concentration": 2.826246616592592e-06
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 51,
+      "concentration": 3.762674184074074e-07
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 52,
+      "concentration": 6.849478933333333e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 53,
+      "concentration": 6.849478933333333e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 54,
+      "concentration": 6.849478933333333e-08
+    },
+    {
+      "year": 2023,
+      "month": 8,
+      "level": 55,
+      "concentration": 6.849478933333333e-08
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 1,
+      "concentration": 2.873985881818182e-08
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 2,
+      "concentration": 4.125125036363636e-08
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 3,
+      "concentration": 5.376264154545454e-08
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 4,
+      "concentration": 6.103499218181818e-08
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 5,
+      "concentration": 6.830734318181818e-08
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 6,
+      "concentration": 8.338888072727273e-08
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 7,
+      "concentration": 1.178627036363636e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 8,
+      "concentration": 1.583588701818182e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 9,
+      "concentration": 2.061456341363636e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 10,
+      "concentration": 2.762393742727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 11,
+      "concentration": 3.521270173181818e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 12,
+      "concentration": 5.492596056818182e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 13,
+      "concentration": 7.229760812727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 14,
+      "concentration": 1.082357212863636e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 15,
+      "concentration": 1.539246625136363e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 16,
+      "concentration": 2.127980255090909e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 17,
+      "concentration": 2.515817289909091e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 18,
+      "concentration": 2.785431475318182e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 19,
+      "concentration": 3.167025655863636e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 20,
+      "concentration": 3.749541065136364e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 21,
+      "concentration": 4.482326300045455e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 22,
+      "concentration": 5.038827256772728e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 23,
+      "concentration": 5.533544811954546e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 24,
+      "concentration": 5.9746087325e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 25,
+      "concentration": 6.409040865545455e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 26,
+      "concentration": 6.746953617590909e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 27,
+      "concentration": 7.089136054409091e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 28,
+      "concentration": 7.295952669318181e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 29,
+      "concentration": 7.468657548272728e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 30,
+      "concentration": 7.270189102681818e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 31,
+      "concentration": 6.964274792818182e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 32,
+      "concentration": 6.221016106318182e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 33,
+      "concentration": 5.46243483190909e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 34,
+      "concentration": 4.693132144545454e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 35,
+      "concentration": 4.0046775625e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 36,
+      "concentration": 3.518132158136364e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 37,
+      "concentration": 3.055068677090909e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 38,
+      "concentration": 2.280099093590909e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 39,
+      "concentration": 1.672517199045455e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 40,
+      "concentration": 1.384033398863636e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 41,
+      "concentration": 1.032002291954545e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 42,
+      "concentration": 1.030777695454545e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 43,
+      "concentration": 6.872065804545454e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 44,
+      "concentration": 4.499169493181818e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 45,
+      "concentration": 3.245965100909091e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 46,
+      "concentration": 2.723425301818182e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 47,
+      "concentration": 8.959576356818181e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 48,
+      "concentration": 1.745898532272727e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 49,
+      "concentration": 3.669568313090909e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 50,
+      "concentration": 2.631637246318182e-06
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 51,
+      "concentration": 5.01988999e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 52,
+      "concentration": 1.257699072727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 53,
+      "concentration": 1.257699072727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 54,
+      "concentration": 1.257699072727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 9,
+      "level": 55,
+      "concentration": 1.257699072727273e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 1,
+      "concentration": 3.0816813e-08
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 2,
+      "concentration": 4.201150359375e-08
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 3,
+      "concentration": 5.320619415625e-08
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 4,
+      "concentration": 5.83708765625e-08
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 5,
+      "concentration": 6.353555878125e-08
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 6,
+      "concentration": 7.90063378125e-08
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 7,
+      "concentration": 7.385671609375e-08
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 8,
+      "concentration": 1.1750754459375e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 9,
+      "concentration": 1.726022119375e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 10,
+      "concentration": 2.6200446346875e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 11,
+      "concentration": 3.495829744375e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 12,
+      "concentration": 5.5268503728125e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 13,
+      "concentration": 7.3773127965625e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 14,
+      "concentration": 1.11584544440625e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 15,
+      "concentration": 1.560847206125e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 16,
+      "concentration": 2.14785193359375e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 17,
+      "concentration": 2.6566982356875e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 18,
+      "concentration": 3.15642581940625e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 19,
+      "concentration": 3.70031647628125e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 20,
+      "concentration": 4.19649490621875e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 21,
+      "concentration": 4.75420202409375e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 22,
+      "concentration": 5.09491870565625e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 23,
+      "concentration": 5.43199317346875e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 24,
+      "concentration": 5.7999932039375e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 25,
+      "concentration": 6.19419733996875e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 26,
+      "concentration": 6.6082014881875e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 27,
+      "concentration": 7.0095679945625e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 28,
+      "concentration": 7.30437257359375e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 29,
+      "concentration": 7.49916833334375e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 30,
+      "concentration": 7.42810969709375e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 31,
+      "concentration": 7.2932610350625e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 32,
+      "concentration": 6.750282864125e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 33,
+      "concentration": 6.1836898054375e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 34,
+      "concentration": 5.395473039e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 35,
+      "concentration": 4.68188109446875e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 36,
+      "concentration": 4.06863085084375e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 37,
+      "concentration": 3.5458523513125e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 38,
+      "concentration": 2.69694484346875e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 39,
+      "concentration": 1.96630283971875e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 40,
+      "concentration": 1.38800542603125e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 41,
+      "concentration": 1.11831511115625e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 42,
+      "concentration": 1.04121072128125e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 43,
+      "concentration": 8.1819663584375e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 44,
+      "concentration": 6.3646146959375e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 45,
+      "concentration": 3.39203775875e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 46,
+      "concentration": 1.0541809346875e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 47,
+      "concentration": 6.29566460375e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 48,
+      "concentration": 4.789914166625e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 49,
+      "concentration": 6.8365010409375e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 50,
+      "concentration": 3.79551353484375e-06
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 51,
+      "concentration": 7.82908292875e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 52,
+      "concentration": 2.3377636228125e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 53,
+      "concentration": 2.3377636228125e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 54,
+      "concentration": 2.3377636228125e-07
+    },
+    {
+      "year": 2023,
+      "month": 10,
+      "level": 55,
+      "concentration": 2.3377636228125e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 1,
+      "concentration": 3.454589936363636e-08
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 2,
+      "concentration": 4.319246890909091e-08
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 3,
+      "concentration": 5.183903745454545e-08
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 4,
+      "concentration": 5.610782331818181e-08
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 5,
+      "concentration": 6.037660963636363e-08
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 6,
+      "concentration": 7.769073695454545e-08
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 7,
+      "concentration": 3.190826159090909e-08
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 8,
+      "concentration": 6.020975622727273e-08
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 9,
+      "concentration": 1.041756603636364e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 10,
+      "concentration": 1.952365666818182e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 11,
+      "concentration": 2.686770537272728e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 12,
+      "concentration": 4.715792078181818e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 13,
+      "concentration": 6.778494875454545e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 14,
+      "concentration": 1.050284450545455e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 15,
+      "concentration": 1.496030945772727e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 16,
+      "concentration": 2.155888590863636e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 17,
+      "concentration": 2.736546217681818e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 18,
+      "concentration": 3.287254995363637e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 19,
+      "concentration": 3.956167595545454e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 20,
+      "concentration": 4.3365748545e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 21,
+      "concentration": 4.504359367272727e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 22,
+      "concentration": 4.412131798681818e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 23,
+      "concentration": 4.513473661772727e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 24,
+      "concentration": 4.704560048772727e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 25,
+      "concentration": 4.850429129136363e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 26,
+      "concentration": 5.111734956545454e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 27,
+      "concentration": 5.50320929840909e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 28,
+      "concentration": 5.977820840272728e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 29,
+      "concentration": 6.384386593181818e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 30,
+      "concentration": 6.529235096500001e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 31,
+      "concentration": 6.584219838818182e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 32,
+      "concentration": 6.363811569954546e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 33,
+      "concentration": 6.159891613227273e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 34,
+      "concentration": 5.678138822181818e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 35,
+      "concentration": 5.1929573395e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 36,
+      "concentration": 4.5479284215e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 37,
+      "concentration": 3.798445287818182e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 38,
+      "concentration": 2.527928560727272e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 39,
+      "concentration": 1.720283457590909e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 40,
+      "concentration": 1.307327638954546e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 41,
+      "concentration": 9.61660493818182e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 42,
+      "concentration": 8.631786977727272e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 43,
+      "concentration": 7.088271936363636e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 44,
+      "concentration": 6.596864013181818e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 45,
+      "concentration": 5.624422965454545e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 46,
+      "concentration": 6.229507306818181e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 47,
+      "concentration": 7.211119982727272e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 48,
+      "concentration": 4.50675502090909e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 49,
+      "concentration": 5.598070648090909e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 50,
+      "concentration": 3.844576688409091e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 51,
+      "concentration": 1.134888893045455e-06
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 52,
+      "concentration": 3.751771786363636e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 53,
+      "concentration": 3.751771786363636e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 54,
+      "concentration": 3.751771786363636e-07
+    },
+    {
+      "year": 2023,
+      "month": 11,
+      "level": 55,
+      "concentration": 3.751771786363636e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 1,
+      "concentration": 3.664341713793103e-08
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 2,
+      "concentration": 4.405134062068965e-08
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 3,
+      "concentration": 5.1459264e-08
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 4,
+      "concentration": 5.545374841379311e-08
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 5,
+      "concentration": 5.94482324137931e-08
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 6,
+      "concentration": 7.82303578275862e-08
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 7,
+      "concentration": 8.244555468965517e-08
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 8,
+      "concentration": 1.579633237241379e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 9,
+      "concentration": 2.31502661e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 10,
+      "concentration": 3.639676549655172e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 11,
+      "concentration": 4.639946059655172e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 12,
+      "concentration": 6.951469436896552e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 13,
+      "concentration": 1.051420069965517e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 14,
+      "concentration": 1.592623424655173e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 15,
+      "concentration": 1.964488703896552e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 16,
+      "concentration": 2.366833996310345e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 17,
+      "concentration": 2.823839842137931e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 18,
+      "concentration": 3.270822311448275e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 19,
+      "concentration": 3.731558230103448e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 20,
+      "concentration": 3.929147224344828e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 21,
+      "concentration": 4.19199903362069e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 22,
+      "concentration": 4.254136550620689e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 23,
+      "concentration": 4.327279400275862e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 24,
+      "concentration": 4.563180074655172e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 25,
+      "concentration": 4.970358484827586e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 26,
+      "concentration": 5.467662190517241e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 27,
+      "concentration": 5.858314203793103e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 28,
+      "concentration": 6.169034271620691e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 29,
+      "concentration": 6.449772203793104e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 30,
+      "concentration": 6.494492105310344e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 31,
+      "concentration": 6.250346626172414e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 32,
+      "concentration": 5.624255177793103e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 33,
+      "concentration": 5.113747710275862e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 34,
+      "concentration": 4.615563746999999e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 35,
+      "concentration": 4.279437579793103e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 36,
+      "concentration": 3.857898491310345e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 37,
+      "concentration": 3.295763956896552e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 38,
+      "concentration": 2.282081921103448e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 39,
+      "concentration": 1.807069279827586e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 40,
+      "concentration": 1.447332982965517e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 41,
+      "concentration": 1.088116034896552e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 42,
+      "concentration": 1.052867896896552e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 43,
+      "concentration": 9.320617758965517e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 44,
+      "concentration": 6.140958299310345e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 45,
+      "concentration": 8.517346985172413e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 46,
+      "concentration": 4.454279506551724e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 47,
+      "concentration": 1.105373021793103e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 48,
+      "concentration": 4.960305203172414e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 49,
+      "concentration": 5.890847327586207e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 50,
+      "concentration": 3.691622458827586e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 51,
+      "concentration": 1.241194091758621e-06
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 52,
+      "concentration": 4.373716701724138e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 53,
+      "concentration": 4.373716701724138e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 54,
+      "concentration": 4.373716701724138e-07
+    },
+    {
+      "year": 2023,
+      "month": 12,
+      "level": 55,
+      "concentration": 4.373716701724138e-07
+    }
+      ]
+    }
+  ]
+}

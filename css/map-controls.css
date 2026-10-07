@@ -1,0 +1,297 @@
+/* Основные стили для контрола слоев Leaflet */
+.leaflet-control-layers {
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.leaflet-control-layers-toggle {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23333"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9.93l-9-7-9 7 1.63 1.27L12 16z"/></svg>');
+    width: 32px;
+    height: 32px;
+    background-size: 70%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Темная тема */
+.dark-mode .leaflet-control-layers-toggle {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23eee"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9.93l-9-7-9 7 1.63 1.27L12 16z"/></svg>');
+}
+
+/* Развернутое состояние контрола */
+.leaflet-control-layers-expanded {
+    width: 220px;
+    padding: 15px;
+}
+
+/* Стили для элементов списка */
+.leaflet-control-layers-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.leaflet-control-layers label {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    margin: 4px 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #333;
+}
+
+.leaflet-control-layers label:hover {
+    background-color: #f5f5f5;
+    transform: translateX(2px);
+}
+
+/* Стили для радио-кнопок */
+.leaflet-control-layers input[type="radio"] {
+    margin-right: 12px;
+    accent-color: #4a6baf;
+}
+
+/* Иконки слоев */
+.layer-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    object-fit: contain;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.leaflet-control-layers label:hover .layer-icon {
+    opacity: 1;
+}
+
+/* Активный слой */
+.leaflet-control-layers input:checked + span {
+    font-weight: 600;
+    color: #2a4a8a;
+}
+
+/* Анимация переключения */
+@keyframes layerSwitch {
+    0% { opacity: 0.5; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+.leaflet-control-layers input:checked ~ span {
+    animation: layerSwitch 0.3s ease;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .leaflet-control-layers-expanded {
+        width: 180px;
+        padding: 10px;
+    }
+    
+    .leaflet-control-layers label {
+        padding: 6px 8px;
+        font-size: 13px;
+    }
+}
+/* Темная тема */
+.dark-mode .leaflet-control-layers {
+    background: rgba(40, 44, 52, 0.95);
+    border-color: #555;
+}
+
+.dark-mode .leaflet-control-layers-toggle {
+    background-color: #2c3e50;
+    border-color: #555;
+}
+
+.dark-mode .leaflet-control-layers label {
+    color: #eee;
+}
+
+.dark-mode .leaflet-control-layers label:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+/* Стили для переключателя тем */
+#theme-toggle {
+    transition: all 0.3s ease;
+}
+
+#theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+.dark-mode #theme-toggle {
+    background: #444;
+    color: #fff;
+}
+
+/* Адаптация элементов управления для темной темы */
+.dark-mode .leaflet-control-layers {
+    background: #2d2d2d;
+    border-color: #444;
+}
+
+.dark-mode .leaflet-control-layers label {
+    color: #f0f0f0;
+}
+
+.dark-mode .leaflet-control-layers label:hover {
+    background-color: #444;
+}
+/* Стили для подложки с легендой */
+#concentration-legend {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    font-size: 13px;
+    max-width: 180px;
+}
+
+.dark-mode #concentration-legend {
+    background: rgba(40, 44, 52, 0.9);
+    color: #eee;
+}
+
+#concentration-legend h4 {
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    color: #2a4a8a;
+}
+
+.dark-mode #concentration-legend h4 {
+    color: #4a9ff5;
+}
+
+.legend-gradient {
+    height: 15px;
+    width: 100%;
+    background: linear-gradient(to right, #00ff00, #ffff00, #ff0000);
+    border-radius: 3px;
+    margin-bottom: 5px;
+}
+
+.legend-labels {
+    display: flex;
+    justify-content: space-between;
+}
+
+.legend-labels span {
+    font-size: 11px;
+}
+
+/* Стили для переключателя веществ */
+#substance {
+    margin-bottom: 15px;
+    background-color: #f8f9fa;
+}
+
+.dark-mode #substance {
+    background-color: #444;
+    color: #eee;
+}
+.legend-info {
+    font-size: 12px;
+    margin-top: 8px;
+    padding: 6px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 4px;
+}
+
+.dark-mode .legend-info {
+    background: rgba(255,255,255,0.1);
+}
+#chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-top: 15px;
+}
+
+.dark-mode #chart-container {
+    background: #333;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+#chart {
+    display: block;
+    width: 280px !important;
+    height: 250px !important;
+}
+
+/* Общие стили для всех кнопок анимации */
+#animate-btn,
+#animate-levels-btn,
+#animate-years-btn {
+    margin-top: 10px;
+    color: #333; /* Темный текст для светлой темы */
+    border: 1px solid #ddd; /* Граница для светлой темы */
+    transition: all 0.3s;
+    background-color: white; /* Белый фон в светлой теме */
+}
+
+/* Стили при наведении в светлой теме */
+#animate-btn:hover,
+#animate-levels-btn:hover,
+#animate-years-btn:hover {
+    background-color: #f5f5f5;
+    border-color: #ccc;
+}
+
+/* Стили для активной анимации */
+#animate-btn.running,
+#animate-levels-btn.running,
+#animate-years-btn.running {
+    font-weight: bold;
+    box-shadow: 0 0 0 2px rgba(74, 107, 175, 0.3);
+}
+
+/* Темная тема */
+.dark-mode #animate-btn,
+.dark-mode #animate-levels-btn,
+.dark-mode #animate-years-btn {
+    background-color: #2d2d2d; /* Темный фон в темной теме */
+    color: #eee; /* Светлый текст в темной теме */
+    border-color: #444; /* Граница для темной темы */
+}
+
+.dark-mode #animate-btn:hover,
+.dark-mode #animate-levels-btn:hover,
+.dark-mode #animate-years-btn:hover {
+    background-color: #3d3d3d;
+    border-color: #555;
+}
+
+.dark-mode #animate-btn.running,
+.dark-mode #animate-levels-btn.running,
+.dark-mode #animate-years-btn.running {
+    box-shadow: 0 0 0 2px rgba(90, 123, 191, 0.5);
+}
+
+/* Стили для иконок в кнопках */
+#animate-btn i,
+#animate-levels-btn i,
+#animate-years-btn i {
+    margin-right: 8px;
+}
+
+/* Анимация кнопок */
+#animate-btn, #animate-levels-btn, #animate-years-btn {
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#animate-btn:active, #animate-levels-btn:active, #animate-years-btn:active {
+    transform: scale(0.98);
+}

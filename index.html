@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Концентрация веществ в Челябинской области</title>
+    
+    <!-- Основные стили -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/map-controls.css">
+    
+    <!-- Иконки Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Базовые стили страницы */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        #container {
+            display: flex;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #map {
+            flex: 1;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #controls {
+            width: 320px;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow-y: auto;
+            transition: transform 0.3s;
+            z-index: 10;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #2a4a8a;
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        
+        #chart-container {
+            margin-top: 30px;
+            height: 300px;
+            position: relative;
+        }
+        
+        /* Кнопка переключения темы */
+        #theme-toggle {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            #container {
+                flex-direction: column;
+            }
+            
+            #map {
+                height: 60vh;
+            }
+            
+            #controls {
+                width: 100%;
+                height: 40vh;
+            }
+        }
+        
+             .dark-mode {
+        background-color: #222;
+        color: #eee;
+    }
+    
+    .dark-mode #controls {
+        background-color: #333;
+        color: #eee;
+    }
+    
+    .dark-mode select,
+    .dark-mode button {
+        background-color: #444;
+        color: #eee;
+        border-color: #555;
+    }
+    
+    .dark-mode h2,
+    .dark-mode h3 {
+        color: #4a9ff5;
+        border-color: #555;
+    }
+
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Кнопка переключения темы -->
+        <button id="theme-toggle" title="Переключить тему">
+            <i class="fas fa-moon"></i>
+        </button>
+        
+        <!-- Основная карта -->
+        <div id="map"></div>
+        
+        <!-- Панель управления -->
+        <div id="controls">
+            <h2><i class="fas fa-sliders-h"></i> Параметры отображения</h2>
+
+            <div class="control-group">
+            <label for="substance"><i class="fas fa-flask"></i> Вещество:</label>
+            <select id="substance">
+                <option value="hno3">HNO₃ (Азотная кислота)</option>
+                <option value="h2o">H₂O (Вода)</option>
+                <option value="co">CO (Угарный газ)</option>
+                <option value="o3">O₃ (Озон)</option>
+            </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="year"><i class="fas fa-calendar-alt"></i> Год:</label>
+                <select id="year"></select>
+            </div>
+            
+            <div class="control-group">
+                <label for="month"><i class="fas fa-calendar-week"></i> Месяц:</label>
+                <select id="month"></select>
+            </div>
+            
+            <div class="control-group">
+                <label for="level"><i class="fas fa-layer-group"></i> Уровень высоты:</label>
+                <select id="level"></select>
+            </div>
+            
+            <div class="control-group">
+                <button id="animate-years-btn">
+                    <i class="fas fa-calendar-alt"></i> Анимировать по годам
+                </button>
+            </div>
+
+            <div class="control-group">
+                <button id="animate-btn">
+                    <i class="fas fa-play"></i> Анимировать по месяцам
+                </button>
+            </div>
+
+            <div class="control-group">
+                <button id="animate-levels-btn">
+                    <i class="fas fa-layer-group"></i> Анимировать по уровням
+                </button>
+            </div>
+            
+            <div id="chart-container" style="width: 280px; height: 250px; margin-top: 20px;">
+                <canvas id="chart" width="280" height="250"></canvas>
+            </div>
+            
+            <div class="info-panel">
+                <h3><i class="fas fa-info-circle"></i> Информация</h3>
+                <p>Концентрация HNO3 в ppm (частей на миллион)</p>
+                <p>Концентрация H2O в ppm (частей на миллион)</p>
+                <p>Концентрация CO в ppm (частей на миллион)</p>
+                <p>Концентрация O3 в ppm (частей на миллион)</p>
+                <div id="legend"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Библиотеки -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/1.0.2/chartjs-plugin-annotation.min.js"></script>
+    
+    <!-- Наш основной скрипт -->
+    <script src="js/app.js"></script>
+    
+    <script>
+    // Инициализация темы
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.addEventListener('click', function() {
+        document.body.classList.toggle('dark-mode');
+        const icon = this.querySelector('i');
+        
+        if (document.body.classList.contains('dark-mode')) {
+            icon.classList.replace('fa-moon', 'fa-sun');
+            localStorage.setItem('darkMode', 'true');
+        } else {
+            icon.classList.replace('fa-sun', 'fa-moon');
+            localStorage.setItem('darkMode', 'false');
+        }
+        
+        // Обновляем стили карты
+        const mapContainer = document.getElementById('map');
+        mapContainer.classList.toggle('dark-map');
+    });
+
+    // Проверяем сохраненную тему при загрузке
+    if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('map').classList.add('dark-map');
+        themeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
+    }
+</script>
+<div id="concentration-legend">
+    <h4><i class="fas fa-info-circle"></i> Концентрация HNO₃ (ppm)</h4>
+    <div class="legend-scale">
+        <div class="legend-gradient"></div>
+        <div class="legend-labels">
+            <span>0</span>
+            <span>0.05</span>
+            <span>0.1</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

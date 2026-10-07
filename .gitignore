@@ -1,0 +1,22 @@
+# Исходные спутниковые данные (NetCDF, ~45 МБ на файл) — не храним в git
+*.nc
+*.nc4
+*.he5
+data/raw/
+data/interim/
+
+# Промежуточные таблицы
+*.xlsx
+~$*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Редакторы и ОС
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
