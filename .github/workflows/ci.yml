@@ -1,19 +1,23 @@
-# Проверки при каждом push в main и в каждом pull request.
-# Если какая-то проверка падает, PR помечается красным и его не стоит мержить.
+# CI/CD проекта.
+#   Pull request      → проверки (python, data, frontend, docker). Красный PR не мержим.
+#   Push в main       → те же проверки, затем публикация образов в GHCR и сайта на GitHub Pages.
+#   Тег vX.Y.Z        → проверки и образы с номером версии (например, :2.0.0 и :2.0).
 name: CI
 
 on:
   push:
     branches: [main]
+    tags: ["v[0-9]+.[0-9]+.[0-9]+"]
   pull_request:
   workflow_dispatch:        # ручной запуск со вкладки Actions
 
 permissions:
-  contents: read            # workflow только читает код
+  contents: read            # по умолчанию только чтение; права на публикацию выдаются отдельным jobs
 
-concurrency:                # новый push в ту же ветку отменяет устаревший запуск
+concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # В PR новый push отменяет устаревший запуск. В main и тегах — нет: прерванный деплой хуже лишнего
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   python:
@@ -135,3 +139,103 @@ jobs:
       - name: Размер образов
         if: always()
         run: docker image ls --format 'table {{.Repository}}:{{.Tag}}\t{{.Size}}' | grep -E 'REPOSITORY|air-gis'
+
+  # ---------------- Публикация (только после успешных проверок, только main и теги) ----------------
+
+  publish-images:
+    name: Публикация образа ${{ matrix.image }} в GHCR
+    needs: [python, data, frontend, docker]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write           # право публиковать образы в GitHub Container Registry
+    strategy:
+      matrix:
+        include:
+          - image: chelyabinsk-air-gis
+            dockerfile: Dockerfile
+          - image: chelyabinsk-air-gis-pipeline
+            dockerfile: Dockerfile.pipeline
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Вход в ghcr.io
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}   # отдельный токен не нужен
+
+      - name: Теги образа
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=short
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Сборка и публикация
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  pages:
+    name: Публикация сайта на GitHub Pages
+    needs: [python, data, frontend, docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write              # публикация на Pages
+      id-token: write           # подтверждение, что деплой идёт из этого репозитория
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Сборка сайта — только файлы, нужные в браузере
+        run: |
+          mkdir -p _site/data
+          cp -r index.html css js _site/
+          cp data/*.json data/region.geojson _site/data/
+          find _site -type f | sort
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - name: Деплой
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+      - name: Проверка опубликованного сайта
+        env:
+          URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          URL="${URL%/}/"
+          for path in "" js/app.js data/hno3_data.json data/region.geojson; do
+            ok=0
+            for _ in $(seq 1 10); do
+              code=$(curl -s -o /dev/null -w '%{http_code}' "${URL}${path}")
+              if [ "$code" = 200 ]; then ok=1; break; fi
+              sleep 3
+            done
+            if [ "$ok" = 1 ]; then echo "ok   ${URL}${path}"; else echo "::error::${URL}${path} → $code"; exit 1; fi
+          done
