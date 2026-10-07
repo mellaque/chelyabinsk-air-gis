@@ -1,0 +1,9 @@
+{
+  "_comment": "Продукты реанализа TROPESS Chemical Reanalysis (TCR-2), NASA GES DISC. Период: 2005–2021. units — в каких единицах сохранять результат.",
+  "substances": {
+    "hno3": { "product": "TRPSCRHNO3M3D", "version": "1", "units": "ppb" },
+    "co":   { "product": "TRPSCRCOM3D",   "version": "1", "units": "ppb" },
+    "o3":   { "product": "TRPSCRO3M3D",   "version": "1", "units": "ppb" },
+    "h2o":  { "product": "TRPSCRQM3D",    "version": "1", "units": "g/kg" }
+  }
+}

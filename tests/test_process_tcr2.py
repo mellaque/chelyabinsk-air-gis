@@ -134,3 +134,39 @@ def test_nearest_cell_wraps_longitude():
     lons = np.array([0.0, 90.0, 180.0, 270.0])
     assert p.nearest_cell(lats, lons, 0.0, -85.0) == (0, 3)   # -85° ближе к 270°
     assert p.nearest_cell(lats, lons, 0.0, 359.0) == (0, 0)
+
+
+@pytest.mark.parametrize("src,dst,factor", [
+    ("PPBV", "ppb", 1.0),
+    ("pptv", "ppb", 1e-3),
+    ("mol mol-1", "ppb", 1e9),
+    ("kg kg-1", "g/kg", 1e3),
+    ("kg/kg", "g/kg", 1e3),
+])
+def test_unit_aliases(src, dst, factor):
+    assert p.unit_factor(src, dst) == pytest.approx(factor)
+
+
+def test_mass_and_volume_units_do_not_mix():
+    with pytest.raises(p.ProcessingError, match="Нельзя перевести"):
+        p.unit_factor("kg/kg", "ppb")
+
+
+def test_unknown_unit_is_reported():
+    with pytest.raises(p.ProcessingError, match="Неизвестные единицы"):
+        p.unit_factor("furlongs", "ppb")
+
+
+def test_default_units_from_config(tmp_path):
+    cfg = tmp_path / "substances.json"
+    cfg.write_text(json.dumps({"substances": {"h2o": {"units": "g/kg"}}}), encoding="utf-8")
+    assert p.default_units(cfg, "h2o") == "g/kg"
+    assert p.default_units(cfg, "co") == "ppb"                 # нет в конфиге
+    assert p.default_units(tmp_path / "missing.json", "h2o") == "ppb"
+
+
+def test_repository_config_matches_known_units():
+    cfg = json.loads((Path(__file__).resolve().parents[1] / "config" / "substances.json").read_text(encoding="utf-8"))
+    for key, item in cfg["substances"].items():
+        assert item["units"] in p.UNITS, key
+        assert item["product"].startswith("TRPSCR"), key

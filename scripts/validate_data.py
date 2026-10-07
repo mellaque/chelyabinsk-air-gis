@@ -21,7 +21,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from prepare_region import fix_mojibake  # noqa: E402
 
-ALLOWED_UNITS = {"ppt", "ppb", "ppm", "mol/mol"}
+ALLOWED_UNITS = {"ppt", "ppb", "ppm", "mol/mol", "kg/kg", "g/kg"}
 ALLOWED_QUALITY = {"verified", "unverified"}
 
 
