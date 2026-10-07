@@ -1,0 +1,10 @@
+# Все текстовые файлы хранятся и выдаются с переводом строк LF (как в Linux и в CI).
+# Без этого Git на Windows подменяет LF на CRLF и выдаёт предупреждения.
+* text=auto eol=lf
+
+# Двоичные файлы не трогаем
+*.png  binary
+*.webp binary
+*.jpg  binary
+*.nc   binary
+*.xlsx binary

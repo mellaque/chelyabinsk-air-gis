@@ -1,0 +1,80 @@
+# Проверки при каждом push в main и в каждом pull request.
+# Если какая-то проверка падает, PR помечается красным и его не стоит мержить.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:        # ручной запуск со вкладки Actions
+
+permissions:
+  contents: read            # workflow только читает код
+
+concurrency:                # новый push в ту же ветку отменяет устаревший запуск
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python ${{ matrix.python-version }} — ruff и тесты
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements*.txt
+
+      - name: Установка зависимостей
+        run: pip install -r requirements-dev.txt
+
+      - name: Ruff — стиль и типичные ошибки
+        run: ruff check --output-format=github .
+
+      - name: Тесты
+        run: pytest
+
+  data:
+    name: Проверка файлов данных
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # Скрипт использует только стандартную библиотеку — зависимости не нужны
+      - name: Формат data/*.json и region.geojson
+        run: python scripts/validate_data.py
+
+  frontend:
+    name: Проверка фронтенда
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+
+      - name: Синтаксис JavaScript
+        run: node --check js/app.js
+
+      - name: Локальные файлы, подключённые в index.html, существуют
+        run: |
+          missing=0
+          for f in $(grep -oE '(src|href)="(css|js)/[^"]+"' index.html | cut -d'"' -f2); do
+            if [ -f "$f" ]; then echo "ok  $f"; else echo "::error file=index.html::нет файла $f"; missing=1; fi
+          done
+          exit $missing

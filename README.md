@@ -1,5 +1,7 @@
 # Веб-ГИС мониторинга качества атмосферного воздуха по спутниковым данным
 
+[![CI](https://github.com/mellaque/chelyabinsk-air-gis/actions/workflows/ci.yml/badge.svg)](https://github.com/mellaque/chelyabinsk-air-gis/actions/workflows/ci.yml)
+
 Интерактивная карта концентраций HNO₃, CO, H₂O и O₃ над Челябинской областью
 по данным спутникового мониторинга и химического реанализа NASA.
 
@@ -9,7 +11,7 @@
 > тег [`v1.0-thesis`](https://github.com/mellaque/chelyabinsk-air-gis/tree/v1.0-thesis).
 > Что изменилось — см. [Исправлено после ВКР](#исправлено-после-вкр).
 
-![Скриншот](docs/screenshot.png)
+![Скриншот](docs/screenshot.webp)
 
 ## Возможности
 
@@ -24,7 +26,7 @@
 ## Стек
 
 HTML, CSS, JavaScript, [Leaflet](https://leafletjs.com/), [Chart.js](https://www.chartjs.org/).
-Обработка данных — Python (netCDF4, NumPy), тесты — pytest.
+Обработка данных — Python (netCDF4, NumPy). Тесты — pytest, линтер — Ruff, CI — GitHub Actions.
 
 ## Запуск
 
@@ -54,13 +56,36 @@ pip install -r requirements-dev.txt
 # файлы TRPSCRHNO3M3D (*.nc) положить в data/raw/hno3/
 python scripts/process_tcr2.py --input data/raw/hno3 --substance hno3 --units ppb --output data/hno3_data.json
 
-pytest                              # тесты пайплайна
+pytest                              # тесты
 ```
 
 Скрипт сам определяет год и месяц по данным внутри файла, пропускает повторно скачанные файлы
 и останавливается, если для одного года найдены два разных файла. Города задаются
 в [`config/cities.json`](config/cities.json), формат результата описан в
 [`docs/data-format.md`](docs/data-format.md).
+
+## Разработка и CI
+
+При каждом push в `main` и в каждом pull request GitHub Actions запускает
+([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+
+| Проверка | Что делает |
+|---|---|
+| **Ruff** | стиль кода и типичные ошибки в Python |
+| **pytest** (Python 3.10 и 3.12) | тесты пайплайна NetCDF → JSON и проверки данных на синтетических файлах |
+| **Проверка данных** | `scripts/validate_data.py`: все `data/*.json` в актуальном формате, размерности совпадают, нет NaN и отрицательных значений, у проверенных данных указан источник, в `region.geojson` нет битой кодировки |
+| **Фронтенд** | синтаксис `js/app.js`, подключённые в `index.html` файлы существуют |
+
+Те же проверки локально:
+
+```bash
+pip install -r requirements-dev.txt
+ruff check .
+pytest
+python scripts/validate_data.py
+```
+
+Обновления зависимостей и версий actions раз в месяц предлагает Dependabot.
 
 ## Структура
 
@@ -78,10 +103,15 @@ pytest                              # тесты пайплайна
 │   └── raw/                    # исходные NetCDF (не хранятся в git)
 ├── scripts/
 │   ├── process_tcr2.py         # NetCDF (TCR-2) → JSON
+│   ├── validate_data.py        # проверка формата данных (используется в CI)
 │   ├── prepare_region.py       # подготовка границ из выгрузки OSM
 │   └── legacy/                 # скрипты версии ВКР
 ├── tests/                      # pytest
-└── docs/data-format.md         # описание формата данных
+├── docs/data-format.md         # описание формата данных
+├── .github/
+│   ├── workflows/ci.yml        # CI: ruff, тесты, проверка данных и фронтенда
+│   └── dependabot.yml          # автообновление зависимостей
+└── pyproject.toml              # настройки Ruff и pytest
 ```
 
 ## Данные
@@ -114,6 +144,7 @@ pytest                              # тесты пайплайна
 | Кнопки анимации по годам и уровням не работали (обработчик добавлялся дважды) | Исправлено |
 | Названия в `region.geojson` в неправильной кодировке, в файле лишние границы (вся РФ, УрФО) | Кодировка исправлена, оставлены область и районы; файл уменьшился с 1,8 до 0,85 МБ |
 | Данные HNO₃ — 3,2 МБ в виде списка записей | Компактный формат, ~150 КБ |
+| Ошибка в данных обнаруживалась только в браузере | CI проверяет формат данных при каждом изменении |
 
 ## Ограничения
 
@@ -130,7 +161,7 @@ pytest                              # тесты пайплайна
 - [x] Отображение пропусков на карте и корректные подписи единиц
 - [x] Регион и список городов в конфигурационном файле
 - [x] Тесты пайплайна
-- [ ] CI на GitHub Actions: тесты и проверки при каждом push
+- [x] CI на GitHub Actions: Ruff, тесты, проверка данных и фронтенда при каждом push и PR
 - [ ] Docker и docker-compose
 - [ ] Деплой (GitHub Pages / VPS)
 - [ ] Скрипт автоматической загрузки данных с NASA Earthdata
