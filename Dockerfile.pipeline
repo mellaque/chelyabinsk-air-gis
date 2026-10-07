@@ -1,0 +1,22 @@
+# syntax=docker/dockerfile:1
+# Образ с пайплайном обработки NetCDF → JSON.
+# Позволяет пересобрать данные без установки Python и netCDF4 на компьютер:
+#   docker compose run --rm pipeline
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Сначала зависимости — этот слой кэшируется и не пересобирается при изменении скриптов
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY scripts/ scripts/
+COPY config/ config/
+
+# Работаем не от root (числовой UID — чтобы права на смонтированные папки были предсказуемыми)
+RUN useradd --create-home --uid 1000 app
+USER 1000
+
+ENTRYPOINT ["python", "scripts/process_tcr2.py"]
+CMD ["--help"]

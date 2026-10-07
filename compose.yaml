@@ -1,0 +1,41 @@
+# Запуск сайта:               docker compose up -d --build   → http://localhost:8080
+# Остановка:                  docker compose down
+# Пересборка данных из .nc:   docker compose run --rm pipeline
+#   (файлы *.nc должны лежать в data/raw/hno3/)
+
+name: chelyabinsk-air-gis
+
+services:
+  web:
+    build: .
+    image: chelyabinsk-air-gis-web:local
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    # Минимум прав: файловая система только для чтения, без capabilities
+    read_only: true
+    tmpfs:
+      - /tmp                      # сюда nginx пишет pid и временные файлы
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+
+  pipeline:
+    profiles: ["pipeline"]        # не запускается при обычном `docker compose up`
+    build:
+      context: .
+      dockerfile: Dockerfile.pipeline
+    image: chelyabinsk-air-gis-pipeline:local
+    volumes:
+      - ./data:/app/data          # сюда читаются .nc и пишется результат
+      - ./config:/app/config:ro
+    command:
+      - --input
+      - data/raw/hno3
+      - --substance
+      - hno3
+      - --units
+      - ppb
+      - --output
+      - data/hno3_data.json

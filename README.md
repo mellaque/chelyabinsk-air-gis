@@ -27,8 +27,27 @@
 
 HTML, CSS, JavaScript, [Leaflet](https://leafletjs.com/), [Chart.js](https://www.chartjs.org/).
 Обработка данных — Python (netCDF4, NumPy). Тесты — pytest, линтер — Ruff, CI — GitHub Actions.
+Развёртывание — Docker, nginx (непривилегированный образ), Docker Compose.
 
 ## Запуск
+
+### В Docker
+
+Нужен [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows, macOS) или Docker Engine (Linux).
+
+```bash
+git clone https://github.com/mellaque/chelyabinsk-air-gis.git
+cd chelyabinsk-air-gis
+docker compose up -d --build
+```
+
+Сайт откроется на <http://localhost:8080>. Остановить: `docker compose down`.
+
+Контейнер работает с минимальными правами: nginx запущен не от root, файловая система только
+для чтения, без Linux capabilities. Данные отдаются со сжатием gzip, а браузер при каждом
+открытии сверяет их с сервером (ответ 304, если файл не менялся).
+
+### Без Docker
 
 Браузер не загружает JSON-файлы со страницы, открытой напрямую (`file://`),
 поэтому нужен любой локальный веб-сервер.
@@ -59,6 +78,12 @@ python scripts/process_tcr2.py --input data/raw/hno3 --substance hno3 --units pp
 pytest                              # тесты
 ```
 
+То же самое без установки Python — в контейнере:
+
+```bash
+docker compose run --rm pipeline
+```
+
 Скрипт сам определяет год и месяц по данным внутри файла, пропускает повторно скачанные файлы
 и останавливается, если для одного года найдены два разных файла. Города задаются
 в [`config/cities.json`](config/cities.json), формат результата описан в
@@ -75,6 +100,7 @@ pytest                              # тесты
 | **pytest** (Python 3.10 и 3.12) | тесты пайплайна NetCDF → JSON и проверки данных на синтетических файлах |
 | **Проверка данных** | `scripts/validate_data.py`: все `data/*.json` в актуальном формате, размерности совпадают, нет NaN и отрицательных значений, у проверенных данных указан источник, в `region.geojson` нет битой кодировки |
 | **Фронтенд** | синтаксис `js/app.js`, подключённые в `index.html` файлы существуют |
+| **Docker** | hadolint проверяет Dockerfile, оба образа собираются, контейнер стартует с ограниченными правами и становится healthy, smoke-тест (`scripts/smoke_test.sh`) проверяет страницы, данные, сжатие и заголовки |
 
 Те же проверки локально:
 
@@ -91,6 +117,10 @@ python scripts/validate_data.py
 
 ```
 ├── index.html                  # страница приложения
+├── Dockerfile                  # образ сайта: проверка данных → nginx
+├── Dockerfile.pipeline         # образ пайплайна обработки NetCDF
+├── compose.yaml                # запуск: docker compose up
+├── deploy/nginx.conf           # конфигурация nginx
 ├── css/map-controls.css        # стили
 ├── js/app.js                   # карта, график, анимации
 ├── config/cities.json          # города и их координаты
@@ -103,13 +133,14 @@ python scripts/validate_data.py
 │   └── raw/                    # исходные NetCDF (не хранятся в git)
 ├── scripts/
 │   ├── process_tcr2.py         # NetCDF (TCR-2) → JSON
-│   ├── validate_data.py        # проверка формата данных (используется в CI)
+│   ├── validate_data.py        # проверка формата данных (CI и сборка образа)
+│   ├── smoke_test.sh           # проверка запущенного сайта
 │   ├── prepare_region.py       # подготовка границ из выгрузки OSM
 │   └── legacy/                 # скрипты версии ВКР
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных
 ├── .github/
-│   ├── workflows/ci.yml        # CI: ruff, тесты, проверка данных и фронтенда
+│   ├── workflows/ci.yml        # CI: ruff, тесты, проверка данных, фронтенда и Docker
 │   └── dependabot.yml          # автообновление зависимостей
 └── pyproject.toml              # настройки Ruff и pytest
 ```
@@ -162,7 +193,7 @@ python scripts/validate_data.py
 - [x] Регион и список городов в конфигурационном файле
 - [x] Тесты пайплайна
 - [x] CI на GitHub Actions: Ruff, тесты, проверка данных и фронтенда при каждом push и PR
-- [ ] Docker и docker-compose
+- [x] Docker и Docker Compose: образ сайта на nginx и образ пайплайна
 - [ ] Деплой (GitHub Pages / VPS)
 - [ ] Скрипт автоматической загрузки данных с NASA Earthdata
 - [ ] CO и O₃ из того же реанализа TCR-2 вместо непроверенных данных MLS
