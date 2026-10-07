@@ -1,7 +1,8 @@
-# Запуск сайта:               docker compose up -d --build   → http://localhost:8080
-# Остановка:                  docker compose down
-# Пересборка данных из .nc:   docker compose run --rm pipeline
-#   (файлы *.nc должны лежать в data/raw/hno3/)
+# Запуск сайта:                    docker compose up -d --build   → http://localhost:8080
+# Остановка:                       docker compose down
+# Скачать данные NASA и обновить   docker compose run --rm update        (нужен EARTHDATA_TOKEN,
+#   все data/*.json:                                                       см. README)
+# Только пересобрать HNO₃ из .nc:  docker compose run --rm pipeline
 
 name: chelyabinsk-air-gis
 
@@ -22,7 +23,7 @@ services:
     security_opt:
       - no-new-privileges:true
 
-  pipeline:
+  pipeline: &pipeline
     profiles: ["pipeline"]        # не запускается при обычном `docker compose up`
     build:
       context: .
@@ -41,3 +42,11 @@ services:
       - ppb
       - --output
       - data/hno3_data.json
+
+  update:
+    <<: *pipeline                 # тот же образ, тома и профиль, что у pipeline
+    entrypoint: ["bash", "scripts/update_data.sh"]
+    command: []                   # можно перечислить вещества: docker compose run --rm update co o3
+    environment:
+      # Токен берётся из окружения или файла .env (он в .gitignore) и в образ не попадает
+      EARTHDATA_TOKEN: ${EARTHDATA_TOKEN:-}

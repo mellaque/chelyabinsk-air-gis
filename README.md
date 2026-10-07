@@ -74,32 +74,61 @@ python -m http.server 8000
 
 Альтернатива — расширение **Live Server** в VS Code: ПКМ по `index.html` → «Open with Live Server».
 
-## Обработка данных
+## Обновление данных
 
 Готовые JSON уже лежат в `data/`, поэтому для запуска карты этот шаг не нужен.
-Чтобы пересобрать данные из исходных NetCDF:
+
+Все вещества берутся из реанализа NASA TROPESS (TCR-2), список продуктов —
+в [`config/substances.json`](config/substances.json). Одна команда скачивает исходные NetCDF
+с NASA GES DISC, пересобирает `data/*.json` и проверяет их формат.
+
+### 1. Учётная запись NASA Earthdata (один раз)
+
+1. Зарегистрируйтесь на <https://urs.earthdata.nasa.gov/> (бесплатно).
+2. **Applications → Authorized Apps → Approve More Applications** → найдите
+   **NASA GESDISC DATA ARCHIVE** → **Approve**. Без этого сервер GES DISC отклоняет загрузку.
+3. **Generate Token** → скопируйте токен. Токен действует ограниченное время; когда истечёт, создайте новый.
+
+### 2. Загрузка и обработка
+
+В Docker (Python ставить не нужно):
+
+```bash
+export EARTHDATA_TOKEN=<токен>        # или строка EARTHDATA_TOKEN=<токен> в файле .env (он в .gitignore)
+docker compose run --rm update         # все вещества, ~2,7 ГБ исходных файлов
+docker compose run --rm update co o3   # только указанные
+```
+
+Без Docker:
 
 ```bash
 python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
+source .venv/bin/activate              # Windows: .venv\Scripts\activate
 pip install -r requirements-dev.txt
-
-# файлы TRPSCRHNO3M3D (*.nc) положить в data/raw/hno3/
-python scripts/process_tcr2.py --input data/raw/hno3 --substance hno3 --units ppb --output data/hno3_data.json
-
-pytest                              # тесты
+export EARTHDATA_TOKEN=<токен>
+bash scripts/update_data.sh
 ```
 
-То же самое без установки Python — в контейнере:
+Отдельные шаги:
 
 ```bash
-docker compose run --rm pipeline
+python scripts/download_tcr2.py --substance co --dry-run         # какие файлы будут скачаны (токен не нужен)
+python scripts/download_tcr2.py --substance co --years 2015-2021 # скачать в data/raw/co/
+python scripts/process_tcr2.py --input data/raw/co --substance co --output data/co_data.json
+python scripts/validate_data.py
 ```
 
-Скрипт сам определяет год и месяц по данным внутри файла, пропускает повторно скачанные файлы
-и останавливается, если для одного года найдены два разных файла. Города задаются
-в [`config/cities.json`](config/cities.json), формат результата описан в
+**Загрузчик** ищет файлы в каталоге NASA CMR, скачивает их с токеном Earthdata (токен не передаётся
+в облачное хранилище, куда перенаправляет сервер), пропускает уже скачанные файлы, докачивает
+прерванные, повторяет запросы при перегрузке сервера и проверяет, что получен именно NetCDF.
+
+**Обработчик** определяет год и месяц по данным внутри файла, пропускает повторно скачанные файлы,
+останавливается, если для одного года найдены два разных файла, и переводит единицы
+(объёмные доли — в ppb, удельную влажность — в г/кг). Города задаются в
+[`config/cities.json`](config/cities.json), формат результата описан в
 [`docs/data-format.md`](docs/data-format.md).
+
+Обработка одного вещества из уже скачанных файлов: `docker compose run --rm pipeline`.
 
 ## Разработка, CI и CD
 
@@ -109,7 +138,7 @@ docker compose run --rm pipeline
 | Проверка | Что делает |
 |---|---|
 | **Ruff** | стиль кода и типичные ошибки в Python |
-| **pytest** (Python 3.12 и 3.14) | тесты пайплайна NetCDF → JSON и проверки данных на синтетических файлах |
+| **pytest** (Python 3.12 и 3.14) | тесты обработки NetCDF → JSON и проверки данных на синтетических файлах; тесты загрузчика на локальном «фальшивом NASA» (каталог, авторизация, редирект без утечки токена, докачка, повторы) |
 | **Проверка данных** | `scripts/validate_data.py`: все `data/*.json` в актуальном формате, размерности совпадают, нет NaN и отрицательных значений, у проверенных данных указан источник, в `region.geojson` нет битой кодировки |
 | **Фронтенд** | синтаксис `js/app.js`, подключённые в `index.html` файлы существуют |
 | **Docker** | hadolint проверяет Dockerfile, оба образа собираются, контейнер стартует с ограниченными правами и становится healthy, smoke-тест (`scripts/smoke_test.sh`) проверяет страницы, данные, сжатие и заголовки |
@@ -146,7 +175,9 @@ python scripts/validate_data.py
 ├── deploy/nginx.conf           # конфигурация nginx
 ├── css/map-controls.css        # стили
 ├── js/app.js                   # карта, график, анимации
-├── config/cities.json          # города и их координаты
+├── config/
+│   ├── cities.json             # города и их координаты
+│   └── substances.json         # вещества → продукты NASA TCR-2 и единицы
 ├── data/
 │   ├── hno3_data.json          # HNO₃: 6 городов, 2011–2021, 27 уровней
 │   ├── co_data.json            # CO, H₂O, O₃ — данные версии ВКР (не проверены)
@@ -155,7 +186,9 @@ python scripts/validate_data.py
 │   ├── region.geojson          # граница области и районов
 │   └── raw/                    # исходные NetCDF (не хранятся в git)
 ├── scripts/
+│   ├── download_tcr2.py        # загрузка NetCDF с NASA GES DISC
 │   ├── process_tcr2.py         # NetCDF (TCR-2) → JSON
+│   ├── update_data.sh          # загрузка + обработка + проверка всех веществ
 │   ├── validate_data.py        # проверка формата данных (CI и сборка образа)
 │   ├── smoke_test.sh           # проверка запущенного сайта
 │   ├── prepare_region.py       # подготовка границ из выгрузки OSM
@@ -170,13 +203,18 @@ python scripts/validate_data.py
 
 ## Данные
 
-| Вещество | Источник |
-|---|---|
-| HNO₃ | TROPESS Chemical Reanalysis (TCR-2), продукт `TRPSCRHNO3M3D`, NASA JPL — [doi:10.5067/0VC7M1P01TQ7](https://doi.org/10.5067/0VC7M1P01TQ7) |
-| CO, H₂O, O₃ | Aura MLS (Microwave Limb Sounder), NASA — данные версии ВКР, исходные файлы не сохранились |
+Реанализ NASA TROPESS Chemical Reanalysis (TCR-2), NASA JPL / GES DISC: месячные значения
+за 2005–2021 годы, 27 уровней давления (1000–60 гПа), сетка 1,125° × 1,125°.
 
-Исходные файлы NetCDF не хранятся в репозитории (около 45 МБ на файл).
-Данные NASA распространяются свободно, для скачивания нужна бесплатная учётная запись
+| Вещество | Продукт | Единицы | DOI |
+|---|---|---|---|
+| HNO₃ | `TRPSCRHNO3M3D` | ppb | [10.5067/0VC7M1P01TQ7](https://doi.org/10.5067/0VC7M1P01TQ7) |
+| CO | `TRPSCRCOM3D` | ppb | [10.5067/GT835KMBSI8O](https://doi.org/10.5067/GT835KMBSI8O) |
+| O₃ | `TRPSCRO3M3D` | ppb | [10.5067/H6X584OA098S](https://doi.org/10.5067/H6X584OA098S) |
+| H₂O (удельная влажность) | `TRPSCRQM3D` | г/кг | [10.5067/5SD4OKARN8F2](https://doi.org/10.5067/5SD4OKARN8F2) |
+
+Исходные файлы NetCDF (36–43 МБ на год) не хранятся в репозитории — их скачивает
+`scripts/download_tcr2.py`. Данные NASA распространяются свободно, нужна бесплатная учётная запись
 [NASA Earthdata](https://urs.earthdata.nasa.gov/).
 
 Картографическая основа и границы административных единиц (`region.geojson`) — © участники
@@ -199,15 +237,14 @@ python scripts/validate_data.py
 | Названия в `region.geojson` в неправильной кодировке, в файле лишние границы (вся РФ, УрФО) | Кодировка исправлена, оставлены область и районы; файл уменьшился с 1,8 до 0,85 МБ |
 | Данные HNO₃ — 3,2 МБ в виде списка записей | Компактный формат, ~150 КБ |
 | Ошибка в данных обнаруживалась только в браузере | CI проверяет формат данных при каждом изменении |
+| CO и H₂O — значения других регионов, O₃ — непроверяемые данные без исходников | CO, O₃ и H₂O заново скачаны из реанализа TCR-2 и обработаны тем же пайплайном, что HNO₃ |
+| HNO₃ только за 2011–2021 | Весь период реанализа, 2005–2021 |
 
 ## Ограничения
 
-- **CO, H₂O, O₃** — данные версии ВКР. Для CO и H₂O на промежуточном этапе значения разных регионов
-  оказались одинаковыми, поэтому их принадлежность Челябинской области не гарантируется.
-  В интерфейсе показывается предупреждение.
+- **Период 2005–2021.** Реанализ TCR-2 завершён и новыми годами не пополняется.
 - **Пространственное разрешение.** Ячейка сетки TCR-2 — около 125 × 70 км, поэтому соседние города
   (Челябинск и Копейск, Миасс и Златоуст) получают одинаковые значения.
-- **2022 год для HNO₃** в исходном наборе отсутствует.
 
 ## План развития
 
@@ -220,8 +257,9 @@ python scripts/validate_data.py
 - [x] Публикация образов в GitHub Container Registry
 - [x] Деплой сайта на GitHub Pages
 - [ ] Деплой контейнера на VPS (Ansible, обратный прокси с HTTPS)
-- [ ] Скрипт автоматической загрузки данных с NASA Earthdata
-- [ ] CO и O₃ из того же реанализа TCR-2 вместо непроверенных данных MLS
+- [x] Автоматическая загрузка данных с NASA Earthdata
+- [x] CO, O₃ и H₂O из реанализа TCR-2 вместо непроверенных данных MLS из версии ВКР
+- [ ] NO₂ и SO₂ — есть в том же реанализе: добавить продукты в `config/substances.json` и вещества в интерфейс
 
 ## Лицензия
 

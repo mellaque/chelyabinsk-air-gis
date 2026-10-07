@@ -177,6 +177,18 @@ function formatValue(v) {
     return Number(v.toPrecision(4)).toLocaleString('ru-RU');
 }
 
+// Подписи единиц на русском и род величины
+const UNIT_LABELS = { 'g/kg': 'г/кг', 'kg/kg': 'кг/кг', 'mol/mol': 'моль/моль' };
+const MASS_UNITS = new Set(['g/kg', 'kg/kg']);
+
+function unitLabel(units) {
+    return UNIT_LABELS[units] || units;
+}
+
+function unitKind(units) {
+    return MASS_UNITS.has(units) ? 'массовая доля' : 'объёмная доля';
+}
+
 function levelLabel(level) {
     return level.pressure_hPa != null
         ? `Уровень ${level.level} — ${level.pressure_hPa} гПа`
@@ -286,7 +298,7 @@ function updateMap() {
 }
 
 function popupContent(city, value, sel) {
-    const units = sel.data.units;
+    const units = unitLabel(sel.data.units);
     const level = sel.data.levels[sel.levelIndex];
     const valueText = value === null
         ? '<span class="no-data">нет данных</span><br><small>Уровень ниже поверхности земли или значение отсутствует в источнике.</small>'
@@ -314,7 +326,7 @@ function popupContent(city, value, sel) {
 }
 
 function updateLegend(sel, scale) {
-    const units = sel.data.units;
+    const units = unitLabel(sel.data.units);
     const gradient = sel.substanceConfig.colorScale.join(', ');
     el('concentration-legend').innerHTML = `
         <h4><i class="fas fa-flask"></i> ${sel.substanceConfig.name}, ${units}</h4>
@@ -338,7 +350,9 @@ function updateInfoPanel() {
     el('data-info').innerHTML = `
         ${warning}
         <p>${sc.info}</p>
-        <p><strong>Единицы:</strong> ${data.units} (объёмная доля)</p>
+        <p><strong>Единицы:</strong> ${unitLabel(data.units)} (${unitKind(data.units)})</p>
+        ${MASS_UNITS.has(data.units) && state.substance === 'h2o'
+            ? '<p>Задан как удельная влажность: граммы водяного пара на килограмм воздуха.</p>' : ''}
         <p><strong>Источник:</strong> ${src.product || '—'}${doi}</p>
         <p><strong>Период:</strong> ${formatYears(data.years)}, уровней: ${data.levels.length}</p>`;
 }
@@ -370,7 +384,7 @@ function initChart() {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: ctx => ctx.raw === null ? 'нет данных' : `${formatValue(ctx.raw)} ${state.data.units}`,
+                        label: ctx => ctx.raw === null ? 'нет данных' : `${formatValue(ctx.raw)} ${unitLabel(state.data.units)}`,
                     },
                 },
             },
@@ -387,7 +401,7 @@ function updateChart(labels, values, sel, scale) {
         borderColor: '#333',
         borderWidth: 1,
     }];
-    chart.options.scales.y.title.text = `${sel.substanceConfig.name}, ${sel.data.units}`;
+    chart.options.scales.y.title.text = `${sel.substanceConfig.name}, ${unitLabel(sel.data.units)}`;
     chart.options.scales.y.suggestedMax = scale ? scale.max : undefined;
     chart.update();
 }

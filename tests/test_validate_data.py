@@ -66,7 +66,11 @@ def test_nan_is_rejected(data_dir):
 
 
 def test_unverified_needs_note(data_dir):
-    edit(data_dir / "co_data.json", lambda d: d.pop("quality_note"))
+    """Тест сам делает файл «непроверенным», а не полагается на текущее содержимое data/."""
+    def make_unverified(d):
+        d["quality"] = "unverified"
+        d.pop("quality_note", None)
+    edit(data_dir / "co_data.json", make_unverified)
     assert run(data_dir) == 1
 
 

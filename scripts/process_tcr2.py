@@ -37,20 +37,45 @@ log = logging.getLogger("process_tcr2")
 
 DATA_DIMS = ("time", "lev", "lat", "lon")
 
-# Коэффициенты перевода объёмных долей: (из, в) -> множитель
-_SCALE = {"ppt": 1e-12, "ppb": 1e-9, "ppm": 1e-6, "mol/mol": 1.0}
+# Единицы: (род величины, множитель к базовой единице). Переводить можно только внутри одного рода.
+UNITS = {
+    # объёмная доля (концентрации газов)
+    "ppt": ("volume", 1e-12),
+    "ppb": ("volume", 1e-9),
+    "ppm": ("volume", 1e-6),
+    "mol/mol": ("volume", 1.0),
+    # массовая доля (например, удельная влажность)
+    "kg/kg": ("mass", 1.0),
+    "g/kg": ("mass", 1e-3),
+}
+# Как те же единицы записываются в атрибуте units у разных продуктов
+UNIT_ALIASES = {
+    "pptv": "ppt", "ppbv": "ppb", "ppmv": "ppm",
+    "mol mol-1": "mol/mol", "mol mol**-1": "mol/mol", "mol/mol": "mol/mol", "v/v": "mol/mol",
+    "kg kg-1": "kg/kg", "kg kg**-1": "kg/kg", "kg/kg": "kg/kg",
+    "g kg-1": "g/kg", "g kg**-1": "g/kg",
+}
 
 
 class ProcessingError(Exception):
     """Ошибка во входных данных, при которой продолжать нельзя."""
 
 
+def normalize_unit(unit: str) -> str:
+    """'PPBV ' -> 'ppb', 'kg kg-1' -> 'kg/kg'. Неизвестные единицы возвращаются как есть."""
+    u = " ".join(unit.strip().lower().split())
+    return UNIT_ALIASES.get(u, u)
+
+
 def unit_factor(src: str, dst: str) -> float:
     """Множитель для перевода значения из единиц src в dst."""
-    src, dst = src.strip().lower(), dst.strip().lower()
-    if src not in _SCALE or dst not in _SCALE:
-        raise ProcessingError(f"Неизвестные единицы: {src!r} -> {dst!r}")
-    return _SCALE[src] / _SCALE[dst]
+    s, d = normalize_unit(src), normalize_unit(dst)
+    if s not in UNITS or d not in UNITS:
+        raise ProcessingError(f"Неизвестные единицы: {src!r} -> {dst!r}. Известные: {sorted(UNITS)}")
+    (s_kind, s_scale), (d_kind, d_scale) = UNITS[s], UNITS[d]
+    if s_kind != d_kind:
+        raise ProcessingError(f"Нельзя перевести {src!r} ({s_kind}) в {dst!r} ({d_kind})")
+    return s_scale / d_scale
 
 
 def round_sig(value: float, digits: int = 4) -> float:
@@ -214,6 +239,15 @@ def build_output(by_year: dict[int, YearData], cities: list[dict], substance: st
     }
 
 
+def default_units(config_path: Path, substance: str) -> str:
+    """Единицы результата из config/substances.json; если вещества там нет — ppb."""
+    if config_path.exists():
+        cfg = json.loads(config_path.read_text(encoding="utf-8")).get("substances", {})
+        if substance in cfg and "units" in cfg[substance]:
+            return cfg[substance]["units"]
+    return "ppb"
+
+
 def load_cities(path: Path) -> list[dict]:
     cities = json.loads(path.read_text(encoding="utf-8"))["cities"]
     for c in cities:
@@ -228,7 +262,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--cities", type=Path, default=Path("config/cities.json"))
     p.add_argument("--substance", required=True, help="ключ вещества, например hno3")
     p.add_argument("--variable", help="имя переменной в NetCDF (по умолчанию определяется автоматически)")
-    p.add_argument("--units", default="ppb", choices=sorted(_SCALE), help="единицы результата")
+    p.add_argument("--units", choices=sorted(UNITS),
+                   help="единицы результата (по умолчанию — из config/substances.json, иначе ppb)")
+    p.add_argument("--substances-config", type=Path, default=Path("config/substances.json"))
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("-v", "--verbose", action="store_true")
     return p.parse_args(argv)
@@ -243,6 +279,8 @@ def main(argv: list[str] | None = None) -> int:
         if not files:
             raise ProcessingError(f"В {args.input} нет файлов .nc")
         cities = load_cities(args.cities)
+        if args.units is None:
+            args.units = default_units(args.substances_config, args.substance)
         by_year = collect(files, cities, args.variable, args.units)
         result = build_output(by_year, cities, args.substance, args.units)
     except ProcessingError as e:
