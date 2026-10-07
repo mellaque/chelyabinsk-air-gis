@@ -1,0 +1,14 @@
+# В контекст сборки попадает только то, что нужно образам
+.git
+.github
+.venv
+venv
+**/__pycache__
+.pytest_cache
+.ruff_cache
+data/raw
+docs
+tests
+*.md
+*.xlsx
+*.nc

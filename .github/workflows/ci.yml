@@ -74,7 +74,63 @@ jobs:
       - name: Локальные файлы, подключённые в index.html, существуют
         run: |
           missing=0
-          for f in $(grep -oE '(src|href)="(css|js)/[^"]+"' index.html | cut -d'"' -f2); do
+          while read -r f; do
             if [ -f "$f" ]; then echo "ok  $f"; else echo "::error file=index.html::нет файла $f"; missing=1; fi
-          done
+          done < <(grep -oE '(src|href)="(css|js)/[^"]+"' index.html | cut -d'"' -f2)
           exit $missing
+
+  docker:
+    name: Docker — сборка и smoke-тест
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Hadolint — проверка Dockerfile
+        run: |
+          pip install hadolint-bin==2.15.1
+          hadolint Dockerfile Dockerfile.pipeline
+
+      - name: Проверка compose.yaml
+        run: docker compose --profile pipeline config --quiet
+
+      - name: Сборка образа сайта
+        run: docker build -t air-gis-web:ci .
+
+      - name: Сборка образа пайплайна
+        run: docker build -f Dockerfile.pipeline -t air-gis-pipeline:ci .
+
+      - name: Запуск контейнера с теми же ограничениями, что в compose.yaml
+        run: |
+          docker run -d --name web -p 8080:8080 \
+            --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
+            air-gis-web:ci
+
+      - name: Ожидание healthcheck
+        run: |
+          for _ in $(seq 1 30); do
+            state=$(docker inspect --format '{{.State.Health.Status}}' web)
+            echo "health: $state"
+            [ "$state" = "healthy" ] && exit 0
+            sleep 2
+          done
+          echo "::error::контейнер не стал healthy за 60 секунд"
+          exit 1
+
+      - name: Smoke-тест сайта
+        run: bash scripts/smoke_test.sh http://localhost:8080
+
+      - name: Образ пайплайна запускается
+        run: docker run --rm air-gis-pipeline:ci --help
+
+      - name: Логи контейнера (при ошибке)
+        if: failure()
+        run: docker logs web || true
+
+      - name: Размер образов
+        if: always()
+        run: docker image ls --format 'table {{.Repository}}:{{.Tag}}\t{{.Size}}' | grep -E 'REPOSITORY|air-gis'
