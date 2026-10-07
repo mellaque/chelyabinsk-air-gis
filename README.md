@@ -5,6 +5,8 @@
 Интерактивная карта концентраций HNO₃, CO, H₂O и O₃ над Челябинской областью
 по данным спутникового мониторинга и химического реанализа NASA.
 
+**Демо:** <https://mellaque.github.io/chelyabinsk-air-gis/>
+
 Проект выполнен как выпускная квалификационная работа (бакалавриат, УУНиТ).
 
 > **Статус:** проект развивается после защиты. Версия в том виде, в каком она защищалась, —
@@ -31,7 +33,17 @@ HTML, CSS, JavaScript, [Leaflet](https://leafletjs.com/), [Chart.js](https://www
 
 ## Запуск
 
-### В Docker
+### Готовый образ
+
+Образ публикуется в GitHub Container Registry при каждом изменении `main`:
+
+```bash
+docker run --rm -p 8080:8080 ghcr.io/mellaque/chelyabinsk-air-gis:latest
+```
+
+Сайт откроется на <http://localhost:8080>. Конкретную версию можно взять по тегу: `:2.0.0`, `:sha-<коммит>`.
+
+### Сборка из исходников в Docker
 
 Нужен [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows, macOS) или Docker Engine (Linux).
 
@@ -89,10 +101,10 @@ docker compose run --rm pipeline
 в [`config/cities.json`](config/cities.json), формат результата описан в
 [`docs/data-format.md`](docs/data-format.md).
 
-## Разработка и CI
+## Разработка, CI и CD
 
-При каждом push в `main` и в каждом pull request GitHub Actions запускает
-([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
+Весь конвейер описан в [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+При каждом pull request и push в `main` запускаются проверки:
 
 | Проверка | Что делает |
 |---|---|
@@ -102,7 +114,18 @@ docker compose run --rm pipeline
 | **Фронтенд** | синтаксис `js/app.js`, подключённые в `index.html` файлы существуют |
 | **Docker** | hadolint проверяет Dockerfile, оба образа собираются, контейнер стартует с ограниченными правами и становится healthy, smoke-тест (`scripts/smoke_test.sh`) проверяет страницы, данные, сжатие и заголовки |
 
-Те же проверки локально:
+Если все проверки прошли и изменения попали в `main`, выполняется публикация:
+
+| Что | Куда |
+|---|---|
+| Сайт | GitHub Pages — <https://mellaque.github.io/chelyabinsk-air-gis/>, после деплоя проверяется, что страница и данные доступны |
+| Образ сайта | `ghcr.io/mellaque/chelyabinsk-air-gis` — теги `latest` и `sha-<коммит>` |
+| Образ пайплайна | `ghcr.io/mellaque/chelyabinsk-air-gis-pipeline` |
+
+Тег вида `v2.0.0` публикует образы с номером версии (`:2.0.0`, `:2.0`).
+В `main` код попадает только через pull request с зелёными проверками (ruleset ветки).
+
+Проверки локально:
 
 ```bash
 pip install -r requirements-dev.txt
@@ -140,7 +163,7 @@ python scripts/validate_data.py
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных
 ├── .github/
-│   ├── workflows/ci.yml        # CI: ruff, тесты, проверка данных, фронтенда и Docker
+│   ├── workflows/ci.yml        # CI/CD: проверки, публикация образов и сайта
 │   └── dependabot.yml          # автообновление зависимостей
 └── pyproject.toml              # настройки Ruff и pytest
 ```
@@ -194,7 +217,9 @@ python scripts/validate_data.py
 - [x] Тесты пайплайна
 - [x] CI на GitHub Actions: Ruff, тесты, проверка данных и фронтенда при каждом push и PR
 - [x] Docker и Docker Compose: образ сайта на nginx и образ пайплайна
-- [ ] Деплой (GitHub Pages / VPS)
+- [x] Публикация образов в GitHub Container Registry
+- [x] Деплой сайта на GitHub Pages
+- [ ] Деплой контейнера на VPS (Ansible, обратный прокси с HTTPS)
 - [ ] Скрипт автоматической загрузки данных с NASA Earthdata
 - [ ] CO и O₃ из того же реанализа TCR-2 вместо непроверенных данных MLS
 
