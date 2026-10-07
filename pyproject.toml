@@ -2,7 +2,7 @@
 
 [tool.ruff]
 line-length = 120
-target-version = "py310"
+target-version = "py312"
 extend-exclude = ["scripts/legacy/extract_hno3_cities.py"]  # исходный скрипт ВКР храним как есть
 
 [tool.ruff.lint]

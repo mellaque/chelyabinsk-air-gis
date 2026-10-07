@@ -9,6 +9,7 @@ services:
   web:
     build: .
     image: chelyabinsk-air-gis-web:local
+    pull_policy: build            # образ собирается локально, не искать его в Docker Hub
     ports:
       - "8080:8080"
     restart: unless-stopped
@@ -27,6 +28,7 @@ services:
       context: .
       dockerfile: Dockerfile.pipeline
     image: chelyabinsk-air-gis-pipeline:local
+    pull_policy: build
     volumes:
       - ./data:/app/data          # сюда читаются .nc и пишется результат
       - ./config:/app/config:ro
