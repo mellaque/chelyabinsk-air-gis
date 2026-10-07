@@ -1,731 +1,445 @@
-// Конфигурация приложения
+// Веб-ГИС мониторинга качества воздуха.
+// Годы, уровни и единицы измерения читаются из файлов данных (формат: docs/data-format.md),
+// поэтому при добавлении новых лет или веществ код менять не нужно.
+
 const config = {
-    defaultYear: 2021,
-    defaultMonth: 1,
-    defaultLevel: 1,
-    animationSpeed: 900, // Общая скорость анимации
-    levelAnimationSpeed: 900, // Можно задать отдельную скорость для уровней
-    yearsAnimationSpeed: 900, // Самая медленная анимация
-    // maxConcentration: 0.1, // максимальное значение для цветовой шкалы
+    defaultSubstance: 'hno3',
+    animationSpeed: 900,
+    noDataColor: '#9e9e9e',
     substances: {
         hno3: {
-            name: "HNO₃",
-            fullName: "Азотная кислота",
-            maxConcentration: 11.66,
-            minConcentration: 0,
-            colorScale: ['#00fff', '#ff0000'], // от зеленого к красному
-            availableYears: [2010, 2021], // Диапазон годов
-            availableLevels: 27 // Количество уровней
+            name: 'HNO₃',
+            fullName: 'Азотная кислота',
+            info: 'Азотная кислота — продукт окисления оксидов азота, один из компонентов загрязнения атмосферы.',
+            colorScale: ['#1a9850', '#fee08b', '#d73027'],
         },
         h2o: {
-            name: "H₂O",
-            fullName: "Вода",
-            maxConcentration: 0.0067,
-            minConcentration: 0.00000027,
-            colorScale: ['#ffffff', '#0000ff' ], // от голубого к синему
-            availableYears: [2022, 2023],
-            availableLevels: 55
+            name: 'H₂O',
+            fullName: 'Водяной пар',
+            info: 'Водяной пар — основной парниковый газ, влияет на погоду и климат.',
+            colorScale: ['#deebf7', '#6baed6', '#08306b'],
         },
         co: {
-            name: "CO",
-            fullName: "Угарный газ",
-            maxConcentration: 0.000061,
-            minConcentration: 0.000000004,
-            colorScale: ['#ffffff', '#ff6600'], // желтый → оранжевый
-            availableYears: [2022, 2023],
-            availableLevels: 37
+            name: 'CO',
+            fullName: 'Угарный газ',
+            info: 'Угарный газ — продукт неполного сгорания топлива, индикатор переноса загрязнений.',
+            colorScale: ['#fff5eb', '#fd8d3c', '#7f2704'],
         },
         o3: {
-            name: "O₃",
-            fullName: "Озон",
-            maxConcentration: 0.0000079,
-            minConcentration: 0.000000028,
-            colorScale: ['#ccccff', '#6600cc'], // светло-фиолетовый → темно-фиолетовый
-            availableYears: [2023, 2023], // Только 2022 год
-            availableLevels: 55
-        }
-    }
+            name: 'O₃',
+            fullName: 'Озон',
+            info: 'Озон защищает от УФ-излучения в стратосфере, но вреден у поверхности.',
+            colorScale: ['#efedf5', '#9e9ac8', '#3f007d'],
+        },
+    },
 };
 
-// Инициализация карты
-const map = L.map('map', {
-    preferCanvas: true,
-    zoomControl: false,
-}).setView([55.0, 60.0], 7);
-
-// Добавляем контрол масштаба
-L.control.zoom({
-    position: 'bottomright'
-}).addTo(map);
+const MONTHS = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+                'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'];
 
 // ======================
-// СЛОИ КАРТ
+// КАРТА
 // ======================
 
-// OpenStreetMap слои
-const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19
-});
+const map = L.map('map', { preferCanvas: true, zoomControl: false }).setView([55.0, 60.0], 7);
+L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-const osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19
-});
-
-// Группировка слоев
+const osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">участники OpenStreetMap</a>';
 const baseLayers = {
-    '<i class="fas fa-map-marked-alt"></i> OSM Стандарт': osmStandard, // Слой по умолчанию
-    '<i class="fas fa-people-arrows"></i> OSM Гуманитарный': osmHumanitarian,
+    '<i class="fas fa-map-marked-alt"></i> OSM Стандарт': L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: osmAttribution, maxZoom: 19 }),
+    '<i class="fas fa-people-arrows"></i> OSM Гуманитарный': L.tileLayer(
+        'https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', { attribution: osmAttribution, maxZoom: 19 }),
 };
+L.control.layers(baseLayers, null, { position: 'topleft', collapsed: true }).addTo(map);
+Object.values(baseLayers)[0].addTo(map);
+map.attributionControl.addAttribution('Данные: NASA TROPESS, Aura MLS');
 
-// Добавляем переключатель слоев
-L.control.layers(baseLayers, null, {
-    position: 'topleft',
-    collapsed: true,
-    autoZIndex: true
-}).addTo(map);
+if (window.innerWidth < 768) map.setView([55.0, 60.0], 6);
 
-// Устанавливаем слой по умолчанию
-osmStandard.addTo(map);
+// ======================
+// СОСТОЯНИЕ
+// ======================
+
+const state = {
+    data: null,          // загруженный файл текущего вещества
+    substance: null,
+    markers: [],
+    animation: null,     // { timer, selectId, buttonId }
+};
+const dataCache = {};    // substance -> data
+const scaleCache = {};   // `${substance}:${levelIndex}` -> {min, max}
+
+const el = id => document.getElementById(id);
 
 // ======================
 // ЗАГРУЗКА ДАННЫХ
 // ======================
 
-let appData = {};
-let geoJsonData = {};
-let currentMarkers = [];
-let animationInterval = null; // Для анимации месяцев
-let levelAnimationInterval = null; // Новая переменная для анимации уровней
-let yearsAnimationInterval = null; // Новая переменная для анимации годов
+async function loadSubstance(substance) {
+    if (!dataCache[substance]) {
+        const response = await fetch(`data/${substance}_data.json`);
+        if (!response.ok) throw new Error(`Не удалось загрузить данные: ${substance}`);
+        const data = await response.json();
+        if (data.schema_version !== 2) throw new Error(`Неподдерживаемый формат данных: ${substance}`);
+        dataCache[substance] = data;
+    }
+    return dataCache[substance];
+}
 
-// Загрузка данных HNO3
-fetch('data/hno3_data.json')
-    .then(response => {
-        if (!response.ok) throw new Error('Ошибка загрузки данных');
-        return response.json();
-    })
-    .then(data => {
-        appData = data;
-        initControls();
-        updateMap();
-    })
-    .catch(error => {
-        console.error('Ошибка:', error);
-        showAlert('Ошибка загрузки данных. Пожалуйста, обновите страницу.', 'error');
-    });
-
-// Загрузка границ области
 fetch('data/region.geojson')
-    .then(response => {
-        if (!response.ok) throw new Error('Ошибка загрузки GeoJSON');
-        return response.json();
-    })
-    .then(data => {
-        geoJsonData = data;
-        L.geoJSON(data, {
-            style: {
-                color: '#8f7878',
-                weight: 2,
-                opacity: 1,
-                fillOpacity: 0.1
-            }
+    .then(r => { if (!r.ok) throw new Error('Не удалось загрузить границы'); return r.json(); })
+    .then(geojson => {
+        L.geoJSON(geojson, {
+            style: f => f.properties.admin_level === 4
+                ? { color: '#5b4b4b', weight: 2.5, fillOpacity: 0.08 }
+                : { color: '#8f7878', weight: 0.8, fillOpacity: 0.04 },
+            onEachFeature: (f, layer) => {
+                if (f.properties.admin_level !== 4 && f.properties.name) {
+                    layer.bindTooltip(f.properties.name, { sticky: true, direction: 'top' });
+                }
+            },
         }).addTo(map);
     })
-    .catch(error => {
-        console.error('Ошибка GeoJSON:', error);
-    });
+    .catch(err => console.error(err));
 
 // ======================
-// ИНИЦИАЛИЗАЦИЯ ЭЛЕМЕНТОВ УПРАВЛЕНИЯ
+// РАСЧЁТЫ
 // ======================
 
-function initControls() {
-    const substanceSelect = document.getElementById('substance');
-    const yearSelect = document.getElementById('year');
-    const monthSelect = document.getElementById('month');
-    const levelSelect = document.getElementById('level');
-    const animateBtn = document.getElementById('animate-btn');
-    const animateLevelsBtn = document.getElementById('animate-levels-btn');
-    const animateYearsBtn = document.getElementById('animate-years-btn');
-
-
-    // Заполняем годы (2010-2022)
-    for (let year = 2010; year <= 2023; year++) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        if (year === config.defaultYear) option.selected = true;
-        yearSelect.appendChild(option);
-    }
-
-    // Заполняем месяцы (1-12)
-    for (let month = 1; month <= 12; month++) {
-        const option = document.createElement('option');
-        option.value = month;
-        option.textContent = new Date(2000, month - 1).toLocaleString('ru', { month: 'long' });
-        if (month === config.defaultMonth) option.selected = true;
-        monthSelect.appendChild(option);
-    }
-
-    // Заполняем уровни (1-27)
-    for (let level = 1; level <= 55; level++) {
-        const option = document.createElement('option');
-        option.value = level;
-        option.textContent = level;
-        if (level === config.defaultLevel) option.selected = true;
-        levelSelect.appendChild(option);
-    }
-
-    // Обработчик изменения вещества
-    substanceSelect.addEventListener('change', function() {
-        updateControlsForSubstance(this.value);
-        updateMap();
-    });
-
-        // Останавливаем анимации при ручном изменении параметров
-    yearSelect.addEventListener('change', function() {
-        stopAllAnimations();
-        updateMap();
-    });
-    
-    monthSelect.addEventListener('change', function() {
-        stopAllAnimations();
-        updateMap();
-    });
-    
-    levelSelect.addEventListener('change', function() {
-        stopAllAnimations();
-        updateMap();
-    });
-
-    // Инициализация для текущего вещества
-    updateControlsForSubstance(substanceSelect.value);
-
-    // Обработчики событий
-    yearSelect.addEventListener('change', updateMap);
-    monthSelect.addEventListener('change', updateMap);
-    levelSelect.addEventListener('change', updateMap);
-    animateBtn.addEventListener('click', toggleAnimation);
-    animateLevelsBtn.addEventListener('click', toggleLevelAnimation);
-    animateYearsBtn.addEventListener('click', toggleYearsAnimation);
-    
-    document.getElementById('substance').addEventListener('change', updateMap);
-    document.getElementById('animate-levels-btn').addEventListener('click', toggleLevelAnimation);
-    document.getElementById('animate-years-btn').addEventListener('click', toggleYearsAnimation);
-    // Инициализация графика
-    initChart();
+function valueAt(city, yearIndex, month, levelIndex) {
+    return city.values[yearIndex]?.[month - 1]?.[levelIndex] ?? null;
 }
 
-function updateControlsForSubstance(substance) {
-    const substanceConfig = config.substances[substance];
-    const yearSelect = document.getElementById('year');
-    const levelSelect = document.getElementById('level');
-
-    // Обновляем годы
-    yearSelect.innerHTML = '';
-    for (let year = substanceConfig.availableYears[0]; year <= substanceConfig.availableYears[1]; year++) {
-        const option = document.createElement('option');
-        option.value = year;
-        option.textContent = year;
-        yearSelect.appendChild(option);
+// Шкала цвета считается для выбранного уровня по всем годам, месяцам и городам,
+// чтобы цвета были сопоставимы при анимации по времени.
+function scaleFor(substance, data, levelIndex) {
+    const key = `${substance}:${levelIndex}`;
+    if (!scaleCache[key]) {
+        let min = Infinity, max = -Infinity;
+        for (const city of data.cities)
+            for (const year of city.values)
+                for (const month of year) {
+                    const v = month[levelIndex];
+                    if (v !== null && v !== undefined) { min = Math.min(min, v); max = Math.max(max, v); }
+                }
+        scaleCache[key] = Number.isFinite(min) ? { min, max } : null;
     }
+    return scaleCache[key];
+}
 
-    // Обновляем уровни
-    levelSelect.innerHTML = '';
-    for (let level = 1; level <= substanceConfig.availableLevels; level++) {
-        const option = document.createElement('option');
-        option.value = level;
-        option.textContent = level;
-        levelSelect.appendChild(option);
+// Уровень по умолчанию — самый нижний, где почти нет пропусков
+// (нижние уровни давления часто оказываются «под землёй»).
+function defaultLevelIndex(data) {
+    for (let li = 0; li < data.levels.length; li++) {
+        let total = 0, present = 0;
+        for (const city of data.cities)
+            for (const year of city.values)
+                for (const month of year) { total++; if (month[li] !== null) present++; }
+        if (total && present / total >= 0.95) return li;
     }
+    return 0;
+}
 
-    // Останавливаем все анимации при смене вещества
-    stopAllAnimations();
+function hexToRgb(hex) {
+    const n = parseInt(hex.slice(1), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
 
-    // Сбрасываем анимации при смене вещества
-    if (animationInterval) toggleAnimation();
-    if (levelAnimationInterval) toggleLevelAnimation();
-    if (yearsAnimationInterval) toggleYearsAnimation();
+function interpolate(colors, t) {
+    t = Math.min(1, Math.max(0, t));
+    const pos = t * (colors.length - 1);
+    const i = Math.min(Math.floor(pos), colors.length - 2);
+    const a = hexToRgb(colors[i]), b = hexToRgb(colors[i + 1]);
+    const f = pos - i;
+    const rgb = a.map((c, k) => Math.round(c + (b[k] - c) * f));
+    return `rgb(${rgb.join(',')})`;
+}
+
+function ratio(value, scale) {
+    if (!scale || scale.max === scale.min) return 0.5;
+    return (value - scale.min) / (scale.max - scale.min);
+}
+
+function colorFor(value, scale, substanceConfig) {
+    return value === null ? config.noDataColor : interpolate(substanceConfig.colorScale, ratio(value, scale));
+}
+
+function formatValue(v) {
+    if (v === null) return '—';
+    const abs = Math.abs(v);
+    if (abs !== 0 && (abs < 0.001 || abs >= 100000)) return v.toExponential(2);
+    return Number(v.toPrecision(4)).toLocaleString('ru-RU');
+}
+
+function levelLabel(level) {
+    return level.pressure_hPa != null
+        ? `Уровень ${level.level} — ${level.pressure_hPa} гПа`
+        : `Уровень ${level.level}`;
 }
 
 // ======================
-// ОБНОВЛЕНИЕ КАРТЫ
+// ЭЛЕМЕНТЫ УПРАВЛЕНИЯ
 // ======================
+
+function fillSelect(select, items, selectedValue) {
+    const previous = selectedValue ?? select.value;
+    select.innerHTML = '';
+    for (const { value, label } of items) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        select.appendChild(option);
+    }
+    const values = items.map(i => String(i.value));
+    select.value = values.includes(String(previous)) ? previous : values[values.length - 1];
+}
+
+function setupControlsFor(data, isFirstLoad) {
+    fillSelect(el('year'), data.years.map(y => ({ value: y, label: y })));
+    fillSelect(el('month'), data.months.map(m => ({ value: m, label: MONTHS[m - 1] })),
+        isFirstLoad ? 1 : undefined);
+    fillSelect(el('level'), data.levels.map((lv, i) => ({ value: i, label: levelLabel(lv) })),
+        defaultLevelIndex(data));
+}
+
+async function selectSubstance(substance, isFirstLoad = false) {
+    stopAnimation();
+    try {
+        const data = await loadSubstance(substance);
+        state.data = data;
+        state.substance = substance;
+        setupControlsFor(data, isFirstLoad);
+        updateInfoPanel();
+        updateMap();
+    } catch (err) {
+        console.error(err);
+        showAlert(err.message, 'error');
+    }
+}
+
+function currentSelection() {
+    const data = state.data;
+    const year = parseInt(el('year').value, 10);
+    return {
+        data,
+        substanceConfig: config.substances[state.substance],
+        year,
+        yearIndex: data.years.indexOf(year),
+        month: parseInt(el('month').value, 10),
+        levelIndex: parseInt(el('level').value, 10),
+    };
+}
+
+// ======================
+// ОТРИСОВКА
+// ======================
+
+function clearMarkers() {
+    state.markers.forEach(m => map.removeLayer(m));
+    state.markers = [];
+}
 
 function updateMap() {
-    const substance = document.getElementById('substance').value;
-    const year = parseInt(document.getElementById('year').value);
-    const month = parseInt(document.getElementById('month').value);
-    const level = parseInt(document.getElementById('level').value);
-    const substanceConfig = config.substances[substance];
+    if (!state.data) return;
+    const sel = currentSelection();
+    const scale = scaleFor(state.substance, sel.data, sel.levelIndex);
 
-    // Проверка на соответствие допустимым значениям
-    if (year < substanceConfig.availableYears[0] || year > substanceConfig.availableYears[1]) {
-        showAlert(`Для ${substanceConfig.fullName} доступны только данные за ${substanceConfig.availableYears.join('-')} годы`, 'warning');
-        return;
-    }
-
-    if (level < 1 || level > substanceConfig.availableLevels) {
-        showAlert(`Для ${substanceConfig.fullName} доступно только ${substanceConfig.availableLevels} уровней`, 'warning');
-        return;
-    }
-
-    // Очищаем предыдущие маркеры
     clearMarkers();
+    const labels = [], values = [];
 
-    // Загрузка данных для выбранного вещества
-    fetch(`data/${substance}_data.json`)
-        .then(response => {
-            if (!response.ok) throw new Error(`Не удалось загрузить данные для ${substanceConfig.fullName}`);
-            return response.json();
-        })
-        .then(data => {
-            if (!data?.cities?.length) {
-                throw new Error('Нет данных для отображения');
-            }
+    for (const city of sel.data.cities) {
+        const value = valueAt(city, sel.yearIndex, sel.month, sel.levelIndex);
+        labels.push(city.name);
+        values.push(value);
 
-            const cityNames = [];
-            const concentrations = [];
-            let maxValue = 0;
-
-            // Обрабатываем данные для каждого города
-            data.cities.forEach(city => {
-                const record = city.data.find(d => 
-                    d.year === year && 
-                    d.month === month && 
-                    d.level === level
-                );
-
-                if (record) {
-                    const concentration = record.concentration;
-                    cityNames.push(city.name);
-                    concentrations.push(concentration);
-                    
-                    // Добавляем маркер на карту
-                    const marker = L.circleMarker([city.coordinates[0], city.coordinates[1]], {
-                        radius: calculateRadius(concentration, substanceConfig.maxConcentration),
-                        fillColor: getColor(concentration, substanceConfig),
-                        color: '#333',
-                        weight: 1,
-                        fillOpacity: 0.7
-                    }).addTo(map);
-
-                    marker.bindPopup(createPopupContent(city, concentration, substanceConfig));
-                    currentMarkers.push(marker);
-
-                    // Обновляем максимальное значение для графика
-                    if (concentration > maxValue) maxValue = concentration;
-                }
-            });
-
-            // Обновляем легенду и график
-            updateLegend(substanceConfig);
-            updateChart(cityNames, concentrations, substance, maxValue);
-
-        })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            showAlert(error.message, 'error');
-            
-            // Очищаем график при ошибке
-            if (chart) {
-                chart.data.labels = [];
-                chart.data.datasets = [];
-                chart.update();
-            }
-        });
-}
-
-function addCityMarker(city, concentration, substance) {
-    const substanceConfig = config.substances[substance];
-    
-    const marker = L.circleMarker([city.coordinates[0], city.coordinates[1]], {
-        radius: calculateRadius(concentration, substanceConfig.maxConcentration),
-        fillColor: getColor(concentration, substanceConfig),
-        color: '#333',
-        weight: 1,
-        fillOpacity: 0.7
-    }).addTo(map);
-    
-    marker.bindPopup(createPopupContent(city, concentration, substanceConfig));
-    currentMarkers.push(marker);
-}
-
-// ======================
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-// ======================
-
-function calculateRadius(concentration, max) {
-    return Math.max(8, Math.min(30, 15 + (concentration / max) * 50));
-}
-
-function getColor(concentration, substanceConfig) {
-    const ratio = Math.min(concentration / substanceConfig.maxConcentration, 1);
-    
-    // Для веществ с двумя цветами в градиенте
-    if (substanceConfig.colorScale && substanceConfig.colorScale.length === 2) {
-        const [color1, color2] = substanceConfig.colorScale;
-        return interpolateColor(color1, color2, ratio);
+        const marker = L.circleMarker(city.coordinates, value === null
+            ? { radius: 8, fillColor: config.noDataColor, color: '#555', weight: 1, dashArray: '3', fillOpacity: 0.5 }
+            : { radius: 9 + 13 * ratio(value, scale), fillColor: colorFor(value, scale, sel.substanceConfig),
+                color: '#333', weight: 1, fillOpacity: 0.8 }
+        ).addTo(map);
+        marker.bindPopup(popupContent(city, value, sel));
+        state.markers.push(marker);
     }
-    
-    // Возвращаем первый цвет из массива или красный по умолчанию
-    return substanceConfig.colorScale?.[0] || '#ff0000';
+
+    updateLegend(sel, scale);
+    updateChart(labels, values, sel, scale);
 }
 
-function interpolateColor(color1, color2, ratio) {
-    const r = Math.round(parseInt(color1.substring(1,3), 16) * (1-ratio) + parseInt(color2.substring(1,3), 16) * ratio);
-    const g = Math.round(parseInt(color1.substring(3,5), 16) * (1-ratio) + parseInt(color2.substring(3,5), 16) * ratio);
-    const b = Math.round(parseInt(color1.substring(5,7), 16) * (1-ratio) + parseInt(color2.substring(5,7), 16) * ratio);
-    return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
-}
+function popupContent(city, value, sel) {
+    const units = sel.data.units;
+    const level = sel.data.levels[sel.levelIndex];
+    const valueText = value === null
+        ? '<span class="no-data">нет данных</span><br><small>Уровень ниже поверхности земли или значение отсутствует в источнике.</small>'
+        : `${formatValue(value)} ${units}`;
 
-function createPopupContent(city, concentration, substanceConfig) {
+    let cellNote = '';
+    if (city.grid_cell) {
+        const [lat, lon] = city.grid_cell;
+        const shared = sel.data.cities
+            .filter(c => c !== city && c.grid_cell && c.grid_cell[0] === lat && c.grid_cell[1] === lon)
+            .map(c => c.name);
+        cellNote = `<p class="popup-note">Ячейка сетки ${lat.toFixed(2)}° с.ш., ${lon.toFixed(2)}° в.д.`
+            + (shared.length ? ` — общая с: ${shared.join(', ')}` : '') + '</p>';
+    }
+
     return `
         <div class="popup-content">
             <h3>${city.name}</h3>
-            <p><strong>Вещество:</strong> ${substanceConfig.fullName}</p>
-            <p><strong>Концентрация:</strong> ${concentration.toExponential(4)} ppm</p>
+            <p><strong>${sel.substanceConfig.name}</strong> — ${sel.substanceConfig.fullName}</p>
+            <p><strong>Концентрация:</strong> ${valueText}</p>
+            <p><strong>Период:</strong> ${MONTHS[sel.month - 1]} ${sel.year}</p>
+            <p><strong>${levelLabel(level)}</strong></p>
+            ${cellNote}
+        </div>`;
+}
+
+function updateLegend(sel, scale) {
+    const units = sel.data.units;
+    const gradient = sel.substanceConfig.colorScale.join(', ');
+    el('concentration-legend').innerHTML = `
+        <h4><i class="fas fa-flask"></i> ${sel.substanceConfig.name}, ${units}</h4>
+        <div class="legend-gradient" style="background: linear-gradient(to right, ${gradient});"></div>
+        <div class="legend-labels">
+            <span>${scale ? formatValue(scale.min) : '—'}</span>
+            <span>${scale ? formatValue(scale.max) : '—'}</span>
         </div>
-    `;
+        <div class="legend-nodata"><span class="swatch"></span> нет данных</div>
+        <div class="legend-note">Шкала для выбранного уровня, все годы и месяцы</div>`;
 }
 
-function updateLegend(substanceConfig) {
-    const legend = document.getElementById('concentration-legend');
-    legend.innerHTML = `
-        <h4><i class="fas fa-flask"></i> ${substanceConfig.fullName}</h4>
-        <div class="legend-scale">
-            <div class="legend-gradient" style="background: linear-gradient(to right, ${substanceConfig.colorScale.join(', ')});"></div>
-            <div class="legend-labels">
-                <span>${(substanceConfig.minConcentration).toFixed(9)}</span>
-                <!-- <span>${(substanceConfig.maxConcentration/2).toFixed(2)}</span> -->
-                <span>${substanceConfig.maxConcentration.toFixed(5)} ppm</span>
-            </div>
-        </div>
-        <div class="legend-info">
-            <i class="fas fa-info-circle"></i> ${getSubstanceInfo(substanceConfig.name)}
-        </div>
-    `;
+function updateInfoPanel() {
+    const data = state.data;
+    const sc = config.substances[state.substance];
+    const src = data.source || {};
+    const doi = src.doi ? ` (<a href="https://doi.org/${src.doi}" target="_blank" rel="noopener">doi:${src.doi}</a>)` : '';
+    const warning = data.quality === 'unverified'
+        ? `<div class="quality-warning"><i class="fas fa-exclamation-triangle"></i> ${data.quality_note || 'Данные не проверены.'}</div>`
+        : '';
+    el('data-info').innerHTML = `
+        ${warning}
+        <p>${sc.info}</p>
+        <p><strong>Единицы:</strong> ${data.units} (объёмная доля)</p>
+        <p><strong>Источник:</strong> ${src.product || '—'}${doi}</p>
+        <p><strong>Период:</strong> ${formatYears(data.years)}, уровней: ${data.levels.length}</p>`;
 }
 
-function getSubstanceInfo(substance) {
-    const info = {
-        'HNO₃': 'Азотная кислота — один из загрязнителей атмосферы.',
-        'H₂O': 'Водяной пар — основной пар в атмосфере, влияет на погоду и парниковый эффект.',
-        'CO': 'Угарный газ — продукт сгорания, опасен для здоровья, влияет на баланс атмосферных газов.',
-        'O₃': 'Озон — защищает от УФ на высоте, но вреден у поверхности.'
-    };
-    return info[substance] || '';
+function formatYears(years) {
+    const first = years[0], last = years[years.length - 1];
+    return first === last ? String(first) : `${first}–${last}`;
 }
 
-function clearMarkers() {
-    currentMarkers.forEach(marker => map.removeLayer(marker));
-    currentMarkers = [];
+// ======================
+// ГРАФИК
+// ======================
+
+let chart = null;
+
+function initChart() {
+    chart = new Chart(el('chart').getContext('2d'), {
+        type: 'bar',
+        data: { labels: [], datasets: [] },
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            animation: { duration: 300 },
+            scales: {
+                y: { beginAtZero: true, title: { display: true, text: '' }, ticks: { font: { size: 10 } } },
+                x: { ticks: { font: { size: 10 }, maxRotation: 45, minRotation: 45 } },
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.raw === null ? 'нет данных' : `${formatValue(ctx.raw)} ${state.data.units}`,
+                    },
+                },
+            },
+        },
+    });
 }
 
-function showAlert(message, type = 'info') {
-    const alert = L.control({ position: 'topcenter' });
-    alert.onAdd = function() {
-        this._div = L.DomUtil.create('div', `alert alert-${type}`);
-        this._div.innerHTML = message;
-        return this._div;
-    };
-    alert.addTo(map);
-    setTimeout(() => alert.remove(), 5000);
+function updateChart(labels, values, sel, scale) {
+    if (!chart) return;
+    chart.data.labels = labels;
+    chart.data.datasets = [{
+        data: values,
+        backgroundColor: values.map(v => colorFor(v, scale, sel.substanceConfig)),
+        borderColor: '#333',
+        borderWidth: 1,
+    }];
+    chart.options.scales.y.title.text = `${sel.substanceConfig.name}, ${sel.data.units}`;
+    chart.options.scales.y.suggestedMax = scale ? scale.max : undefined;
+    chart.update();
 }
 
 // ======================
 // АНИМАЦИЯ
 // ======================
 
-function toggleAnimation() {
-    const btn = document.getElementById('animate-btn');
-    const icon = btn.querySelector('i');
-    
-    if (animationInterval) {
-        clearInterval(animationInterval);
-        animationInterval = null;
-        btn.innerHTML = '<i class="fas fa-play"></i> Анимировать по месяцам';
-        return;
-    }
-    
-    // Останавливаем другие анимации
-    if (levelAnimationInterval) toggleLevelAnimation();
-    if (yearsAnimationInterval) toggleYearsAnimation();
-    
+const ANIMATIONS = {
+    'animate-years-btn': { selectId: 'year', label: '<i class="fas fa-calendar-alt"></i> Анимировать по годам' },
+    'animate-btn': { selectId: 'month', label: '<i class="fas fa-play"></i> Анимировать по месяцам' },
+    'animate-levels-btn': { selectId: 'level', label: '<i class="fas fa-layer-group"></i> Анимировать по уровням' },
+};
+
+function stopAnimation() {
+    if (!state.animation) return;
+    clearInterval(state.animation.timer);
+    const btn = el(state.animation.buttonId);
+    btn.innerHTML = ANIMATIONS[state.animation.buttonId].label;
+    btn.classList.remove('running');
+    state.animation = null;
+}
+
+function toggleAnimation(buttonId) {
+    const wasRunning = state.animation?.buttonId === buttonId;
+    stopAnimation();
+    if (wasRunning) return;
+
+    const select = el(ANIMATIONS[buttonId].selectId);
+    const btn = el(buttonId);
     btn.innerHTML = '<i class="fas fa-stop"></i> Остановить анимацию';
-    
-    // Начинаем с текущего выбранного месяца
-    let month = parseInt(document.getElementById('month').value);
-    const maxMonth = 12;
-    
-    animationInterval = setInterval(() => {
-        document.getElementById('month').value = month;
-        updateMap();
-        
-        month = month % maxMonth + 1;
-    }, config.animationSpeed);
-}
+    btn.classList.add('running');
 
-function toggleLevelAnimation() {
-    const btn = document.getElementById('animate-levels-btn');
-    const icon = btn.querySelector('i');
-    
-    if (levelAnimationInterval) {
-        clearInterval(levelAnimationInterval);
-        levelAnimationInterval = null;
-        btn.innerHTML = '<i class="fas fa-layer-group"></i> Анимировать по уровням';
-        return;
-    }
-    
-    // Останавливаем другие анимации
-    if (animationInterval) toggleAnimation();
-    if (yearsAnimationInterval) toggleYearsAnimation();
-    
-    btn.innerHTML = '<i class="fas fa-stop"></i> Остановить анимацию';
-    
-    // Начинаем с текущего выбранного уровня
-    const levelSelect = document.getElementById('level');
-    let level = parseInt(levelSelect.value);
-    const maxLevel = parseInt(levelSelect.options[levelSelect.options.length - 1].value);
-    
-    levelAnimationInterval = setInterval(() => {
-        levelSelect.value = level;
-        updateMap();
-        
-        if (level >= maxLevel) {
-            level = 1;
-        } else {
-            level++;
-        }
-    }, config.levelAnimationSpeed);
-}
-
-function toggleYearsAnimation() {
-    const btn = document.getElementById('animate-years-btn');
-    const icon = btn.querySelector('i');
-    
-    if (yearsAnimationInterval) {
-        clearInterval(yearsAnimationInterval);
-        yearsAnimationInterval = null;
-        btn.innerHTML = '<i class="fas fa-calendar-alt"></i> Анимировать по годам';
-        return;
-    }
-    
-    // Останавливаем другие анимации
-    if (animationInterval) toggleAnimation();
-    if (levelAnimationInterval) toggleLevelAnimation();
-    
-    btn.innerHTML = '<i class="fas fa-stop"></i> Остановить анимацию';
-    
-    // Начинаем с текущего выбранного года
-    const yearSelect = document.getElementById('year');
-    let year = parseInt(yearSelect.value);
-    const minYear = parseInt(yearSelect.options[0].value);
-    const maxYear = parseInt(yearSelect.options[yearSelect.options.length - 1].value);
-    
-    yearsAnimationInterval = setInterval(() => {
-        yearSelect.value = year;
-        updateMap();
-        
-        if (year >= maxYear) {
-            year = minYear;
-        } else {
-            year++;
-        }
-    }, config.yearsAnimationSpeed);
-}
-
-function stopAllAnimations() {
-    if (animationInterval) {
-        const btn = document.getElementById('animate-btn');
-        clearInterval(animationInterval);
-        animationInterval = null;
-        btn.innerHTML = '<i class="fas fa-play"></i> Анимировать по месяцам';
-    }
-    
-    if (levelAnimationInterval) {
-        const btn = document.getElementById('animate-levels-btn');
-        clearInterval(levelAnimationInterval);
-        levelAnimationInterval = null;
-        btn.innerHTML = '<i class="fas fa-layer-group"></i> Анимировать по уровням';
-    }
-    
-    if (yearsAnimationInterval) {
-        const btn = document.getElementById('animate-years-btn');
-        clearInterval(yearsAnimationInterval);
-        yearsAnimationInterval = null;
-        btn.innerHTML = '<i class="fas fa-calendar-alt"></i> Анимировать по годам';
-    }
+    state.animation = {
+        buttonId,
+        timer: setInterval(() => {
+            select.selectedIndex = (select.selectedIndex + 1) % select.options.length;
+            updateMap();
+        }, config.animationSpeed),
+    };
 }
 
 // ======================
-// ГРАФИК (CHART.JS)
+// УВЕДОМЛЕНИЯ
 // ======================
 
-let chart = null;
-
-function initChart() {
-    const ctx = document.getElementById('chart').getContext('2d');
-    
-    chart = new Chart(ctx, {
-        type: 'bar',
-        data: { 
-            labels: [], 
-            datasets: [] 
-        },
-        options: {
-            responsive: false, // Отключаем адаптивность
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: { 
-                        display: true, 
-                        text: 'Концентрация (ppm)',
-                        font: {
-                            size: 12
-                        }
-                    },
-                    ticks: {
-                        font: {
-                            size: 10
-                        }
-                    }
-                },
-                x: {
-                    ticks: {
-                        font: {
-                            size: 10
-                        },
-                        maxRotation: 45,
-                        minRotation: 45
-                    }
-                }
-            },
-            plugins: {
-                legend: { 
-                    display: false 
-                },
-                tooltip: {
-                    callbacks: {
-                        label: ctx => `${ctx.raw.toExponential(4)} ppm`
-                    }
-                }
-            }
-        }
-    });
-}
-
-function updateChart(labels, data, substance) {
-    if (!chart) return;
-    
-    const substanceConfig = config.substances[substance];
-    
-    chart.data.labels = labels;
-    chart.data.datasets = [{
-        label: substanceConfig.fullName,
-        data: data,
-        backgroundColor: data.map(c => getColor(c, substanceConfig)),
-        borderColor: '#333',
-        borderWidth: 1,
-        barThickness: 15 // Фиксированная толщина столбцов
-    }];
-    
-    // Фиксированные пределы для оси Y
-    chart.options.scales.y.max = substanceConfig.maxConcentration * 1.1;
-    chart.options.scales.y.min = 0;
-    
-    chart.update();
-}
-
-function updateChart(labels, data, substance) {
-    if (!chart) return;
-    
-    const substanceConfig = config.substances[substance];
-    
-    chart.data.labels = labels;
-    chart.data.datasets = [{
-        label: `Концентрация ${substanceConfig.name}`,
-        data: data,
-        backgroundColor: data.map(c => getColor(c, substanceConfig)),
-        borderColor: '#333',
-        borderWidth: 1
-    }];
-    chart.update();
-}
-
-function highlightChart(cityName) {
-    if (!chart) return;
-    
-    const index = chart.data.labels.indexOf(cityName);
-    if (index >= 0) {
-        chart.setActiveElements([{ datasetIndex: 0, index }]);
-        chart.update();
-    }
-}
-
-function resetChartHighlight() {
-    if (chart) {
-        chart.setActiveElements([]);
-        chart.update();
-    }
-}
-
-function centerMapOnCity(cityName) {
-    const city = appData.cities.find(c => c.name === cityName);
-    if (city) {
-        map.flyTo(city.coordinates, 10, {
-            duration: 1,
-            easeLinearity: 0.25
-        });
-    }
+function showAlert(message, type = 'info') {
+    const box = document.createElement('div');
+    box.className = `app-alert app-alert-${type}`;
+    box.textContent = message;
+    el('map').appendChild(box);
+    setTimeout(() => box.remove(), 5000);
 }
 
 // ======================
-// ТЕМНАЯ ТЕМА
+// ЗАПУСК
 // ======================
 
-// Инициализация при загрузке
+function init() {
+    initChart();
 
-    // Инициализация темы
-    document.getElementById('theme-toggle').addEventListener('click', toggleDarkMode);
-    updateThemeIcon();
-    
-    // Адаптация под мобильные устройства
-    if (window.innerWidth < 768) {
-        map.setView([55.0, 60.0], 6);
+    el('substance').addEventListener('change', e => selectSubstance(e.target.value));
+    for (const id of ['year', 'month', 'level']) {
+        el(id).addEventListener('change', () => { stopAnimation(); updateMap(); });
     }
-function getAvailableSubstances() {
-    return Object.keys(config.substances).filter(substance => {
-        // Проверяем существование файла данных
-        // В реальном приложении нужно делать AJAX-запрос
-        return true; // Для демонстрации всегда возвращаем true
-    });
+    for (const buttonId of Object.keys(ANIMATIONS)) {
+        el(buttonId).addEventListener('click', () => toggleAnimation(buttonId));
+    }
+
+    el('substance').value = config.defaultSubstance;
+    selectSubstance(config.defaultSubstance, true);
 }
 
-// Автоматическое заполнение select
-function initSubstanceSelector() {
-    const select = document.getElementById('substance');
-    select.innerHTML = ''; // Очищаем существующие варианты
-    
-    getAvailableSubstances().forEach(substanceKey => {
-        const substance = config.substances[substanceKey];
-        const option = document.createElement('option');
-        option.value = substanceKey;
-        option.textContent = `${substance.name} (${substance.fullName})`;
-        select.appendChild(option);
-    });
-}
-
-function validateData(data) {
-    return data.cities.every(city => 
-        Array.isArray(city.data) && 
-        city.data.every(item => 
-            typeof item.concentration === 'number'
-        )
-    );
-}
-
-// Вызовите эту функцию в initControls()
+init();

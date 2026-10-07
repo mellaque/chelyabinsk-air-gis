@@ -151,7 +151,7 @@
             <label for="substance"><i class="fas fa-flask"></i> Вещество:</label>
             <select id="substance">
                 <option value="hno3">HNO₃ (Азотная кислота)</option>
-                <option value="h2o">H₂O (Вода)</option>
+                <option value="h2o">H₂O (Водяной пар)</option>
                 <option value="co">CO (Угарный газ)</option>
                 <option value="o3">O₃ (Озон)</option>
             </select>
@@ -196,19 +196,16 @@
             
             <div class="info-panel">
                 <h3><i class="fas fa-info-circle"></i> Информация</h3>
-                <p>Концентрация HNO3 в ppm (частей на миллион)</p>
-                <p>Концентрация H2O в ppm (частей на миллион)</p>
-                <p>Концентрация CO в ppm (частей на миллион)</p>
-                <p>Концентрация O3 в ppm (частей на миллион)</p>
-                <div id="legend"></div>
+                <div id="data-info"></div>
             </div>
         </div>
     </div>
 
+    <div id="concentration-legend"></div>
+
     <!-- Библиотеки -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/1.0.2/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
     
     <!-- Наш основной скрипт -->
     <script src="js/app.js"></script>
@@ -240,16 +237,5 @@
         themeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
     }
 </script>
-<div id="concentration-legend">
-    <h4><i class="fas fa-info-circle"></i> Концентрация HNO₃ (ppm)</h4>
-    <div class="legend-scale">
-        <div class="legend-gradient"></div>
-        <div class="legend-labels">
-            <span>0</span>
-            <span>0.05</span>
-            <span>0.1</span>
-        </div>
-    </div>
-</div>
 </body>
 </html>
