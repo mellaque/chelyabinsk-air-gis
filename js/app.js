@@ -78,10 +78,15 @@ const el = id => document.getElementById(id);
 
 async function loadSubstance(substance) {
     if (!dataCache[substance]) {
-        const response = await fetch(`data/${substance}_data.json`);
-        if (!response.ok) throw new Error(`Не удалось загрузить данные: ${substance}`);
+        const url = `data/${substance}_data.json`;
+        // no-cache: браузер обязан сверить файл с сервером, иначе после обновления данных
+        // он может показать старую версию из кэша
+        const response = await fetch(url, { cache: 'no-cache' });
+        if (!response.ok) throw new Error(`Не удалось загрузить ${url} (HTTP ${response.status})`);
         const data = await response.json();
-        if (data.schema_version !== 2) throw new Error(`Неподдерживаемый формат данных: ${substance}`);
+        if (data.schema_version !== 2) {
+            throw new Error(`Файл ${url} в устаревшем формате. Обновите страницу без кэша (Ctrl+F5).`);
+        }
         dataCache[substance] = data;
     }
     return dataCache[substance];
@@ -203,18 +208,32 @@ function setupControlsFor(data, isFirstLoad) {
         defaultLevelIndex(data));
 }
 
+let selectRequest = 0;
+
 async function selectSubstance(substance, isFirstLoad = false) {
     stopAnimation();
+    const request = ++selectRequest;
     try {
         const data = await loadSubstance(substance);
+        // Пока файл грузился, пользователь мог выбрать другое вещество — этот ответ уже не нужен
+        if (request !== selectRequest) return;
         state.data = data;
         state.substance = substance;
         setupControlsFor(data, isFirstLoad);
         updateInfoPanel();
         updateMap();
     } catch (err) {
+        if (request !== selectRequest) return;
         console.error(err);
         showAlert(err.message, 'error');
+        // Не оставляем карту в рассогласованном состоянии: возвращаем выбор
+        // к последнему успешно загруженному веществу или очищаем карту
+        if (state.substance) {
+            el('substance').value = state.substance;
+        } else {
+            clearMarkers();
+            el('concentration-legend').innerHTML = '';
+        }
     }
 }
 
@@ -416,6 +435,7 @@ function toggleAnimation(buttonId) {
 // ======================
 
 function showAlert(message, type = 'info') {
+    document.querySelectorAll('.app-alert').forEach(old => old.remove());
     const box = document.createElement('div');
     box.className = `app-alert app-alert-${type}`;
     box.textContent = message;
