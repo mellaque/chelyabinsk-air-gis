@@ -1,0 +1,119 @@
+# Анализ безопасности. Результаты — во вкладке Security → Code scanning репозитория,
+# а замечания по изменённому коду — прямо в pull request.
+#
+#   Trivy  — уязвимости в зависимостях и Docker-образах, забытые секреты, ошибки конфигурации
+#   CodeQL — статический анализ кода на Python и JavaScript и самих workflow GitHub Actions
+#
+# Еженедельный запуск по расписанию нужен потому, что новые уязвимости публикуются постоянно:
+# образ, вчера чистый, сегодня может оказаться уязвимым без единого изменения в коде.
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "23 4 * * 1"      # понедельник, 04:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  trivy:
+    name: Trivy — репозиторий и образы
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write    # загрузка отчётов во вкладку Security
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Репозиторий — зависимости, секреты, конфигурация
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
+        with:
+          version: v0.75.0
+          scan-type: fs
+          scan-ref: .
+          scanners: vuln,secret,misconfig
+          skip-dirs: data/raw
+          format: sarif
+          output: trivy-repo.sarif
+
+      - name: Сборка образов для проверки
+        run: |
+          docker build -t air-gis-web:scan .
+          docker build -f Dockerfile.pipeline -t air-gis-pipeline:scan .
+
+      - name: Образ сайта
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
+        with:
+          version: v0.75.0
+          skip-setup-trivy: true
+          image-ref: air-gis-web:scan
+          format: sarif
+          output: trivy-web.sarif
+
+      - name: Образ пайплайна
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
+        with:
+          version: v0.75.0
+          skip-setup-trivy: true
+          image-ref: air-gis-pipeline:scan
+          format: sarif
+          output: trivy-pipeline.sarif
+
+      - name: Отчёт — репозиторий
+        if: always()
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2  # v4.38.2
+        with:
+          sarif_file: trivy-repo.sarif
+          category: trivy-repo
+
+      - name: Отчёт — образ сайта
+        if: always()
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2  # v4.38.2
+        with:
+          sarif_file: trivy-web.sarif
+          category: trivy-image-web
+
+      - name: Отчёт — образ пайплайна
+        if: always()
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2  # v4.38.2
+        with:
+          sarif_file: trivy-pipeline.sarif
+          category: trivy-image-pipeline
+
+  codeql:
+    name: CodeQL — ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write    # загрузка результатов во вкладку Security
+      actions: read             # CodeQL читает метаданные запуска workflow
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python, javascript-typescript, actions]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: github/codeql-action/init@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2  # v4.38.2
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none            # интерпретируемые языки — сборка не нужна
+          queries: security-extended  # расширенный набор правил безопасности
+
+      - uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2  # v4.38.2
+        with:
+          category: codeql-${{ matrix.language }}

@@ -18,5 +18,8 @@ COPY config/ config/
 RUN useradd --create-home --uid 1000 app
 USER 1000
 
+# Разовая задача, а не сервис: проверка живости не нужна (явно — для сканеров, Trivy DS-0026)
+HEALTHCHECK NONE
+
 ENTRYPOINT ["python", "scripts/process_tcr2.py"]
 CMD ["--help"]
