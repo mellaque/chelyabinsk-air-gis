@@ -8,6 +8,10 @@
 
 **Демо:** <https://mellaque.github.io/chelyabinsk-air-gis/>
 
+Основной репозиторий — [GitHub](https://github.com/mellaque/chelyabinsk-air-gis): здесь issues,
+pull request и основной CI/CD. Зеркала: [GitLab](https://gitlab.com/mellaque/chelyabinsk-air-gis)
+(со своим CI — [`.gitlab-ci.yml`](.gitlab-ci.yml)) и [GitVerse](https://gitverse.ru/mellaque/chelyabinsk-air-gis).
+
 Проект выполнен как выпускная квалификационная работа (бакалавриат, УУНиТ).
 
 > **Статус:** проект развивается после защиты. Версия в том виде, в каком она защищалась, —
@@ -176,6 +180,11 @@ python scripts/validate_data.py
 
 Обновления зависимостей и версий actions раз в месяц предлагает Dependabot.
 
+На зеркале GitLab те же проверки описаны в [`.gitlab-ci.yml`](.gitlab-ci.yml) средствами GitLab:
+стадии, `parallel:matrix` для версий Python, сборка и smoke-тест образов в docker-in-docker,
+Trivy по сохранённым образам из артефактов, встроенные шаблоны SAST и поиска секретов,
+отчёты тестов (JUnit) и качества кода (Code Quality) в merge request.
+
 ## Безопасность
 
 - **Trivy** проверяет зависимости, оба Docker-образа, секреты и конфигурацию; **CodeQL** — код на Python
@@ -219,6 +228,7 @@ python scripts/validate_data.py
 │   └── legacy/                 # скрипты версии ВКР
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных
+├── .gitlab-ci.yml              # CI для зеркала на GitLab
 ├── .github/
 │   ├── workflows/ci.yml        # CI/CD: проверки, публикация образов и сайта
 │   ├── workflows/security.yml  # Trivy и CodeQL, в том числе еженедельно
