@@ -29,8 +29,9 @@ def data_dir(tmp_path):
     return target
 
 
-def run(data_dir):
-    return v.main(["--data-dir", str(data_dir), "--cities", str(ROOT / "config" / "cities.json")])
+def run(data_dir, substances=None):
+    return v.main(["--data-dir", str(data_dir), "--cities", str(ROOT / "config" / "cities.json"),
+                   "--substances", str(substances or ROOT / "config" / "substances.json")])
 
 
 def edit(path: Path, change):
@@ -95,3 +96,18 @@ def test_report_collects_all_errors():
     v.validate_values(copy.deepcopy(values), shape, "x", report)
     assert len(report.errors) == 1
     assert "отрицательная" in report.errors[0]
+
+
+def test_every_configured_substance_has_data(data_dir, tmp_path):
+    cfg = json.loads((ROOT / "config" / "substances.json").read_text(encoding="utf-8"))
+    cfg["substances"]["xx"] = {"product": "TRPSCRXXM3D", "version": "1", "units": "ppb"}
+    path = tmp_path / "substances.json"
+    path.write_text(json.dumps(cfg), encoding="utf-8")
+    assert run(data_dir, path) == 1          # для xx нет data/xx_data.json
+
+
+def test_data_file_without_config_is_rejected(data_dir):
+    (data_dir / "co_data.json").rename(data_dir / "zz_data.json")
+    edit(data_dir / "zz_data.json", lambda d: d.update(substance="zz"))
+    assert run(data_dir) == 1                # zz нет в конфиге, а co пропал
+

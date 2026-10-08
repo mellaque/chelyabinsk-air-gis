@@ -3,21 +3,25 @@
 // поэтому при добавлении новых лет или веществ код менять не нужно.
 
 const config = {
-    defaultSubstance: 'hno3',
+    defaultSubstance: 'no2',
     animationSpeed: 900,
     noDataColor: '#9e9e9e',
+    // Порядок здесь = порядок в списке на странице. Ключи должны совпадать с config/substances.json
+    // (это проверяет tests/test_site_contract.py).
     substances: {
-        hno3: {
-            name: 'HNO₃',
-            fullName: 'Азотная кислота',
-            info: 'Азотная кислота — продукт окисления оксидов азота, один из компонентов загрязнения атмосферы.',
-            colorScale: ['#1a9850', '#fee08b', '#d73027'],
+        no2: {
+            name: 'NO₂',
+            fullName: 'Диоксид азота',
+            info: 'Диоксид азота — продукт сгорания топлива на транспорте, ТЭЦ и металлургических '
+                + 'предприятиях. Раздражает дыхательные пути, участвует в образовании озона и кислотных дождей.',
+            colorScale: ['#ffffe5', '#fec44f', '#993404'],
         },
-        h2o: {
-            name: 'H₂O',
-            fullName: 'Водяной пар',
-            info: 'Водяной пар — основной парниковый газ, влияет на погоду и климат.',
-            colorScale: ['#deebf7', '#6baed6', '#08306b'],
+        so2: {
+            name: 'SO₂',
+            fullName: 'Диоксид серы',
+            info: 'Диоксид серы выделяется при сжигании угля и выплавке металлов из сернистых руд. '
+                + 'Характерный загрязнитель металлургических центров; раздражает дыхательные пути.',
+            colorScale: ['#f7fcf5', '#74c476', '#00441b'],
         },
         co: {
             name: 'CO',
@@ -30,6 +34,25 @@ const config = {
             fullName: 'Озон',
             info: 'Озон защищает от УФ-излучения в стратосфере, но вреден у поверхности.',
             colorScale: ['#efedf5', '#9e9ac8', '#3f007d'],
+        },
+        ch2o: {
+            name: 'CH₂O',
+            fullName: 'Формальдегид',
+            info: 'Формальдегид образуется при окислении углеводородов и поступает с выбросами промышленности '
+                + 'и транспорта. Токсичен, относится к канцерогенам.',
+            colorScale: ['#fff5f0', '#fb6a4a', '#67000d'],
+        },
+        hno3: {
+            name: 'HNO₃',
+            fullName: 'Азотная кислота',
+            info: 'Азотная кислота — продукт окисления оксидов азота, один из компонентов загрязнения атмосферы.',
+            colorScale: ['#1a9850', '#fee08b', '#d73027'],
+        },
+        h2o: {
+            name: 'H₂O',
+            fullName: 'Водяной пар',
+            info: 'Водяной пар — основной парниковый газ, влияет на погоду и климат.',
+            colorScale: ['#deebf7', '#6baed6', '#08306b'],
         },
     },
 };
@@ -461,8 +484,20 @@ function showAlert(message, type = 'info') {
 // ЗАПУСК
 // ======================
 
+function fillSubstanceSelect() {
+    const select = el('substance');
+    select.innerHTML = '';
+    for (const [key, sc] of Object.entries(config.substances)) {
+        const option = document.createElement('option');
+        option.value = key;
+        option.textContent = `${sc.name} (${sc.fullName})`;
+        select.appendChild(option);
+    }
+}
+
 function init() {
     initChart();
+    fillSubstanceSelect();
 
     el('substance').addEventListener('change', e => selectSubstance(e.target.value));
     for (const id of ['year', 'month', 'level']) {

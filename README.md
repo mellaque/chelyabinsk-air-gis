@@ -2,8 +2,8 @@
 
 [![CI](https://github.com/mellaque/chelyabinsk-air-gis/actions/workflows/ci.yml/badge.svg)](https://github.com/mellaque/chelyabinsk-air-gis/actions/workflows/ci.yml)
 
-Интерактивная карта концентраций HNO₃, CO, H₂O и O₃ над Челябинской областью
-по данным спутникового мониторинга и химического реанализа NASA.
+Интерактивная карта концентраций загрязнителей воздуха (NO₂, SO₂, CO, O₃, формальдегида, HNO₃)
+и водяного пара над Челябинской областью по данным химического реанализа NASA за 2005–2021 годы.
 
 **Демо:** <https://mellaque.github.io/chelyabinsk-air-gis/>
 
@@ -22,7 +22,8 @@
 - анимация по годам, месяцам и уровням;
 - график концентраций по городам (Chart.js);
 - пропуски в данных показываются серым, а не как нулевая концентрация;
-- подсказки с названиями районов, предупреждение о непроверенных данных;
+- семь веществ: NO₂, SO₂, CO, O₃, формальдегид, HNO₃ и водяной пар;
+- подсказки с названиями районов; во всплывающем окне видно, какие города попали в одну ячейку сетки;
 - светлая и тёмная тема, переключение картографических подложек.
 
 ## Стек
@@ -130,6 +131,15 @@ python scripts/validate_data.py
 
 Обработка одного вещества из уже скачанных файлов: `docker compose run --rm pipeline`.
 
+### Как добавить вещество
+
+1. Продукт NASA — в [`config/substances.json`](config/substances.json) (ключ, `product`, `units`).
+2. Название, описание и цвета — в `config.substances` в [`js/app.js`](js/app.js), ключ тот же.
+3. `bash scripts/update_data.sh <ключ>` — скачать и обработать.
+
+Тесты проверяют, что списки веществ в конфиге, на странице и в `data/` совпадают, —
+наполовину добавленное вещество не пройдёт CI.
+
 ## Разработка, CI и CD
 
 Весь конвейер описан в [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
@@ -212,6 +222,9 @@ python scripts/validate_data.py
 | CO | `TRPSCRCOM3D` | ppb | [10.5067/GT835KMBSI8O](https://doi.org/10.5067/GT835KMBSI8O) |
 | O₃ | `TRPSCRO3M3D` | ppb | [10.5067/H6X584OA098S](https://doi.org/10.5067/H6X584OA098S) |
 | H₂O (удельная влажность) | `TRPSCRQM3D` | г/кг | [10.5067/5SD4OKARN8F2](https://doi.org/10.5067/5SD4OKARN8F2) |
+| NO₂ | `TRPSCRNO2M3D` | ppb | [10.5067/F4FE5VWM9501](https://doi.org/10.5067/F4FE5VWM9501) |
+| SO₂ | `TRPSCRSO2M3D` | ppb | [10.5067/546QVG4Q8JZM](https://doi.org/10.5067/546QVG4Q8JZM) |
+| CH₂O (формальдегид) | `TRPSCRCH2OM3D` | ppb | [10.5067/6F26QNSI0DNX](https://doi.org/10.5067/6F26QNSI0DNX) |
 
 Исходные файлы NetCDF (36–43 МБ на год) не хранятся в репозитории — их скачивает
 `scripts/download_tcr2.py`. Данные NASA распространяются свободно, нужна бесплатная учётная запись
@@ -259,7 +272,8 @@ python scripts/validate_data.py
 - [ ] Деплой контейнера на VPS (Ansible, обратный прокси с HTTPS)
 - [x] Автоматическая загрузка данных с NASA Earthdata
 - [x] CO, O₃ и H₂O из реанализа TCR-2 вместо непроверенных данных MLS из версии ВКР
-- [ ] NO₂ и SO₂ — есть в том же реанализе: добавить продукты в `config/substances.json` и вещества в интерфейс
+- [x] NO₂, SO₂ и формальдегид из того же реанализа
+- [ ] Аэрозоли (сульфаты, нитраты, аммоний — компоненты PM2.5): `TRPSCRAERSO4M3D` и др., нужно проверить единицы
 
 ## Лицензия
 
