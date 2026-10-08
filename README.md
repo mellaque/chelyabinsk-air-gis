@@ -1,6 +1,7 @@
 # Веб-ГИС мониторинга качества атмосферного воздуха по спутниковым данным
 
 [![CI](https://github.com/mellaque/chelyabinsk-air-gis/actions/workflows/ci.yml/badge.svg)](https://github.com/mellaque/chelyabinsk-air-gis/actions/workflows/ci.yml)
+[![Security](https://github.com/mellaque/chelyabinsk-air-gis/actions/workflows/security.yml/badge.svg)](https://github.com/mellaque/chelyabinsk-air-gis/actions/workflows/security.yml)
 
 Интерактивная карта концентраций загрязнителей воздуха (NO₂, SO₂, CO, O₃, формальдегида, HNO₃)
 и водяного пара над Челябинской областью по данным химического реанализа NASA за 2005–2021 годы.
@@ -175,6 +176,19 @@ python scripts/validate_data.py
 
 Обновления зависимостей и версий actions раз в месяц предлагает Dependabot.
 
+## Безопасность
+
+- **Trivy** проверяет зависимости, оба Docker-образа, секреты и конфигурацию; **CodeQL** — код на Python
+  и JavaScript и сами workflow. Отчёты — во вкладке Security, при каждом PR и раз в неделю
+  ([`security.yml`](.github/workflows/security.yml)).
+- Образ с критической уязвимостью, для которой уже есть исправление, не проходит CI.
+- Все GitHub Actions закреплены по хешу коммита, у каждого job — минимальные права;
+  workflow проверяются линтерами actionlint и [zizmor](https://docs.zizmor.sh/).
+- Опубликованные образы подписаны **cosign** (Sigstore, без ключей), к ним приложены **SBOM**
+  (список пакетов) и **provenance** (из какого коммита и каким workflow собран образ).
+
+Проверка подписи и политика сообщения об уязвимостях — в [SECURITY.md](SECURITY.md).
+
 ## Структура
 
 ```
@@ -207,6 +221,7 @@ python scripts/validate_data.py
 ├── docs/data-format.md         # описание формата данных
 ├── .github/
 │   ├── workflows/ci.yml        # CI/CD: проверки, публикация образов и сайта
+│   ├── workflows/security.yml  # Trivy и CodeQL, в том числе еженедельно
 │   └── dependabot.yml          # автообновление зависимостей
 └── pyproject.toml              # настройки Ruff и pytest
 ```
@@ -269,6 +284,7 @@ python scripts/validate_data.py
 - [x] Docker и Docker Compose: образ сайта на nginx и образ пайплайна
 - [x] Публикация образов в GitHub Container Registry
 - [x] Деплой сайта на GitHub Pages
+- [x] Безопасность цепочки поставок: Trivy, CodeQL, подпись образов, SBOM, закрепление actions
 - [ ] Деплой контейнера на VPS (Ansible, обратный прокси с HTTPS)
 - [x] Автоматическая загрузка данных с NASA Earthdata
 - [x] CO, O₃ и H₂O из реанализа TCR-2 вместо непроверенных данных MLS из версии ВКР

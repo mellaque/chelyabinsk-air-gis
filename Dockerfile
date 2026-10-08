@@ -25,6 +25,10 @@ COPY js/ /usr/share/nginx/html/js/
 # Данные берём из первого этапа — то есть именно те, что прошли проверку
 COPY --from=validate /app/data/ /usr/share/nginx/html/data/
 
+# Базовый образ и так работает от пользователя nginx (UID 101); указываем явно —
+# так видно из Dockerfile и так ожидают сканеры (Trivy DS-0002)
+USER 101
+
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --start-interval=2s --retries=3 \
