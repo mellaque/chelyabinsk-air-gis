@@ -34,7 +34,8 @@ echo "Проверяю $BASE"
 
 echo "Файлы отдаются:"
 for path in / /index.html /js/app.js /css/map-controls.css /healthz \
-            /data/hno3_data.json /data/co_data.json /data/h2o_data.json /data/o3_data.json /data/region.geojson; do
+            /data/no2_data.json /data/so2_data.json /data/co_data.json /data/o3_data.json \
+            /data/ch2o_data.json /data/hno3_data.json /data/h2o_data.json /data/region.geojson; do
     code=$(status "$path")
     check "$path → 200" "$path → $code (ожидался 200)" test "$code" = 200
 done

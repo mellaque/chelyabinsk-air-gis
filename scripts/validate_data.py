@@ -169,11 +169,25 @@ def validate_cities_config(config_path: Path, data: dict | None, report: Report)
                  "Пересоберите данные scripts/process_tcr2.py")
 
 
+def validate_substance_list(config_path: Path, files: list[Path], report: Report) -> None:
+    """Набор веществ в config/substances.json и набор файлов data/*_data.json должны совпадать."""
+    if not config_path.exists():
+        return
+    expected = set(json.loads(config_path.read_text(encoding="utf-8"))["substances"])
+    actual = {p.name.removesuffix("_data.json") for p in files}
+    for s in sorted(expected - actual):
+        report.error(display(config_path), f"нет файла data/{s}_data.json — скачайте и обработайте: "
+                                           f"bash scripts/update_data.sh {s}")
+    for s in sorted(actual - expected):
+        report.error(f"data/{s}_data.json", "вещества нет в config/substances.json")
+
+
 def main(argv: list[str] | None = None) -> int:
     root = Path(__file__).resolve().parents[1]
     p = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     p.add_argument("--data-dir", type=Path, default=root / "data")
     p.add_argument("--cities", type=Path, default=root / "config" / "cities.json")
+    p.add_argument("--substances", type=Path, default=root / "config" / "substances.json")
     args = p.parse_args(argv)
 
     report = Report()
@@ -185,6 +199,7 @@ def main(argv: list[str] | None = None) -> int:
             validate_cities_config(args.cities, data, report)
         status = "ok" if not any(e.startswith(display(path)) for e in report.errors) else "ОШИБКИ"
         print(f"{path.name}: {status}")
+    validate_substance_list(args.substances, files, report)
 
     region = args.data_dir / "region.geojson"
     if report.check(region.exists(), display(region), "файл не найден"):
