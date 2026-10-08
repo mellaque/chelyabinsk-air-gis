@@ -58,6 +58,11 @@ jobs:
           version: v0.75.0
           skip-setup-trivy: true
           image-ref: air-gis-web:scan
+          # Политика: только High/Critical, для которых уже есть исправление.
+          # Без limit-severities-for-sarif trivy-action пишет в SARIF все уровни.
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          limit-severities-for-sarif: true
           format: sarif
           output: trivy-web.sarif
 
@@ -67,6 +72,11 @@ jobs:
           version: v0.75.0
           skip-setup-trivy: true
           image-ref: air-gis-pipeline:scan
+          # Политика: только High/Critical, для которых уже есть исправление.
+          # Без limit-severities-for-sarif trivy-action пишет в SARIF все уровни.
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          limit-severities-for-sarif: true
           format: sarif
           output: trivy-pipeline.sarif
 
