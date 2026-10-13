@@ -27,15 +27,20 @@ header() {
         | tr -d '\r' | grep -i "^$2:" | head -1 | cut -d' ' -f2-
 }
 
-# Тело ответа содержит строку
+# Тело ответа содержит строку / не содержит ни одной из строк
 body_contains() { curl -s "$BASE$1" | grep -qF -- "$2"; }
+body_lacks() { local path=$1; shift; ! curl -s "$BASE$path" | grep -qF "${@/#/-e}"; }
 
 echo "Проверяю $BASE"
 
 echo "Файлы отдаются:"
-for path in / /index.html /js/app.js /css/map-controls.css /healthz \
+for path in / /index.html /js/app.js /js/theme.js /css/map-controls.css /css/page.css /healthz \
             /data/no2_data.json /data/so2_data.json /data/co_data.json /data/o3_data.json \
-            /data/ch2o_data.json /data/hno3_data.json /data/h2o_data.json /data/region.geojson; do
+            /data/ch2o_data.json /data/hno3_data.json /data/h2o_data.json /data/region.geojson \
+            /vendor/leaflet/leaflet.js /vendor/leaflet/leaflet.css /vendor/leaflet/images/layers.png \
+            /vendor/chart.js/chart.umd.js /vendor/fontawesome/css/fontawesome.min.css \
+            /vendor/fontawesome/css/solid.min.css /vendor/fontawesome/webfonts/fa-solid-900.woff2 \
+            /vendor/open-sans/open-sans.css /vendor/open-sans/files/open-sans-cyrillic-400-normal.woff2; do
     code=$(status "$path")
     check "$path → 200" "$path → $code (ожидался 200)" test "$code" = 200
 done
@@ -51,6 +56,10 @@ check "/healthz → ok" "/healthz не вернул ok" body_contains /healthz "
 check "index.html содержит карту" "в index.html нет #map" body_contains / '<div id="map">'
 check "hno3_data.json в формате schema_version 2" "hno3_data.json не в формате 2" \
     body_contains /data/hno3_data.json '"schema_version":2'
+check "index.html: задана Content-Security-Policy" "в index.html нет Content-Security-Policy" \
+    body_contains / 'http-equiv="Content-Security-Policy"'
+check "index.html: библиотеки свои, без CDN" "index.html ссылается на CDN" \
+    body_lacks / unpkg.com cdnjs.cloudflare.com cdn.jsdelivr.net fonts.googleapis.com
 
 echo "Заголовки:"
 ct=$(header /data/region.geojson Content-Type)
@@ -60,6 +69,8 @@ cc=$(header /data/hno3_data.json Cache-Control)
 check "данные: Cache-Control no-cache" "данные: Cache-Control '$cc'" test "$cc" = "no-cache"
 enc=$(header /data/hno3_data.json Content-Encoding gzip)
 check "данные сжимаются gzip" "данные не сжимаются (Content-Encoding '$enc')" test "$enc" = "gzip"
+font=$(header /vendor/fontawesome/webfonts/fa-solid-900.woff2 Content-Type)
+check "шрифты: Content-Type $font" "шрифты: Content-Type '$font'" test "${font%%;*}" = "font/woff2"
 nos=$(header / X-Content-Type-Options)
 check "X-Content-Type-Options: nosniff" "нет X-Content-Type-Options" test "$nos" = "nosniff"
 srv=$(header / Server)

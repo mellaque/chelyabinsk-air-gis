@@ -3,8 +3,13 @@
 * text=auto eol=lf
 
 # Двоичные файлы не трогаем
-*.png  binary
-*.webp binary
-*.jpg  binary
-*.nc   binary
-*.xlsx binary
+*.png   binary
+*.webp  binary
+*.jpg   binary
+*.nc    binary
+*.xlsx  binary
+*.woff2 binary
+
+# Библиотеки из npm храним побайтно как в пакетах — CI сверяет их с npm
+# (scripts/vendor_frontend.py --check). В части файлов Leaflet переводы строк CRLF.
+vendor/** -text

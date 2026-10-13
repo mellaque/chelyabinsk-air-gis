@@ -5,133 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Концентрация веществ в Челябинской области</title>
     
-    <!-- Основные стили -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="css/map-controls.css">
-    
-    <!-- Иконки Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Шрифты -->
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    
-    <style>
-        /* Базовые стили страницы */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Open Sans', sans-serif;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        
-        #container {
-            display: flex;
-            height: 100vh;
-            position: relative;
-        }
-        
-        #map {
-            flex: 1;
-            height: 100%;
-            z-index: 1;
-        }
-        
-        #controls {
-            width: 320px;
-            background: white;
-            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-            padding: 20px;
-            overflow-y: auto;
-            transition: transform 0.3s;
-            z-index: 10;
-        }
-        
-        .control-group {
-            margin-bottom: 20px;
-        }
-        
-        h2 {
-            color: #2a4a8a;
-            margin-top: 0;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-        
-        select, button {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            background: white;
-            font-size: 14px;
-            margin-top: 8px;
-        }
-        
-        #chart-container {
-            margin-top: 30px;
-            height: 300px;
-            position: relative;
-        }
-        
-        /* Кнопка переключения темы */
-        #theme-toggle {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            cursor: pointer;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Адаптивность */
-        @media (max-width: 768px) {
-            #container {
-                flex-direction: column;
-            }
-            
-            #map {
-                height: 60vh;
-            }
-            
-            #controls {
-                width: 100%;
-                height: 40vh;
-            }
-        }
-        
-             .dark-mode {
-        background-color: #222;
-        color: #eee;
-    }
-    
-    .dark-mode #controls {
-        background-color: #333;
-        color: #eee;
-    }
-    
-    .dark-mode select,
-    .dark-mode button {
-        background-color: #444;
-        color: #eee;
-        border-color: #555;
-    }
-    
-    .dark-mode h2,
-    .dark-mode h3 {
-        color: #4a9ff5;
-        border-color: #555;
-    }
+    <!-- Политика безопасности (CSP): скрипты, стили и шрифты — только с этого сайта (библиотеки лежат
+         в vendor/, см. scripts/vendor_frontend.py), картинки — ещё и тайлы OpenStreetMap, данные — только
+         свои. Встроенных скриптов и стилей на странице нет. Задана здесь, а не заголовком nginx, чтобы
+         действовать и на GitHub Pages. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: https://*.tile.openstreetmap.org https://*.tile.openstreetmap.fr; font-src 'self'; connect-src 'self'; base-uri 'self'; form-action 'none'">
 
-    </style>
+    <!-- Стили — в прежнем порядке: карта, элементы управления, иконки, шрифт, страница -->
+    <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+    <link rel="stylesheet" href="css/map-controls.css">
+    <link rel="stylesheet" href="vendor/fontawesome/css/fontawesome.min.css">
+    <link rel="stylesheet" href="vendor/fontawesome/css/solid.min.css">
+    <link rel="stylesheet" href="vendor/open-sans/open-sans.css">
+    <link rel="stylesheet" href="css/page.css">
 </head>
 <body>
     <div id="container">
@@ -185,7 +71,7 @@
                 </button>
             </div>
             
-            <div id="chart-container" style="width: 280px; height: 250px; margin-top: 20px;">
+            <div id="chart-container">
                 <canvas id="chart" width="280" height="250"></canvas>
             </div>
             
@@ -199,38 +85,11 @@
     <div id="concentration-legend"></div>
 
     <!-- Библиотеки -->
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
-    
-    <!-- Наш основной скрипт -->
-    <script src="js/app.js"></script>
-    
-    <script>
-    // Инициализация темы
-    const themeToggle = document.getElementById('theme-toggle');
-    themeToggle.addEventListener('click', function() {
-        document.body.classList.toggle('dark-mode');
-        const icon = this.querySelector('i');
-        
-        if (document.body.classList.contains('dark-mode')) {
-            icon.classList.replace('fa-moon', 'fa-sun');
-            localStorage.setItem('darkMode', 'true');
-        } else {
-            icon.classList.replace('fa-sun', 'fa-moon');
-            localStorage.setItem('darkMode', 'false');
-        }
-        
-        // Обновляем стили карты
-        const mapContainer = document.getElementById('map');
-        mapContainer.classList.toggle('dark-map');
-    });
+    <script src="vendor/leaflet/leaflet.js"></script>
+    <script src="vendor/chart.js/chart.umd.js"></script>
 
-    // Проверяем сохраненную тему при загрузке
-    if (localStorage.getItem('darkMode') === 'true') {
-        document.body.classList.add('dark-mode');
-        document.getElementById('map').classList.add('dark-map');
-        themeToggle.querySelector('i').classList.replace('fa-moon', 'fa-sun');
-    }
-</script>
+    <!-- Карта, график, анимации; переключение темы -->
+    <script src="js/app.js"></script>
+    <script src="js/theme.js"></script>
 </body>
 </html>

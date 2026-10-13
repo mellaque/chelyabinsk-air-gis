@@ -12,3 +12,4 @@ tests
 *.md
 *.xlsx
 *.nc
+node_modules

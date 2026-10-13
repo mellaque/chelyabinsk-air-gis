@@ -69,11 +69,14 @@ frontend:
   stage: lint
   image: node:22-alpine
   script:
-    - node --check js/app.js
+    - apk add --no-cache python3
+    - npm ci --ignore-scripts --no-audit --no-fund       # точно по package-lock.json
+    - python3 scripts/vendor_frontend.py --check          # vendor/ побайтно совпадает с пакетами npm
+    - for f in js/*.js; do node --check "$f"; done
     # Локальные файлы, подключённые в index.html, существуют
     - |
       missing=0
-      for f in $(grep -oE '(src|href)="(css|js)/[^"]+"' index.html | cut -d'"' -f2); do
+      for f in $(grep -oE '(src|href)="(css|js|vendor)/[^"]+"' index.html | cut -d'"' -f2); do
         if [ -f "$f" ]; then echo "ok  $f"; else echo "нет файла $f"; missing=1; fi
       done
       exit $missing

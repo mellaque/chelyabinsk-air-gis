@@ -22,6 +22,7 @@ COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY index.html /usr/share/nginx/html/
 COPY css/ /usr/share/nginx/html/css/
 COPY js/ /usr/share/nginx/html/js/
+COPY vendor/ /usr/share/nginx/html/vendor/
 # Данные берём из первого этапа — то есть именно те, что прошли проверку
 COPY --from=validate /app/data/ /usr/share/nginx/html/data/
 
