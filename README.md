@@ -10,7 +10,8 @@
 
 Основной репозиторий — [GitHub](https://github.com/mellaque/chelyabinsk-air-gis): здесь issues,
 pull request и основной CI/CD. Зеркала: [GitLab](https://gitlab.com/mellaque/chelyabinsk-air-gis)
-(со своим CI — [`.gitlab-ci.yml`](.gitlab-ci.yml)) и [GitVerse](https://gitverse.ru/mellaque/chelyabinsk-air-gis).
+(со своим CI — [`.gitlab-ci.yml`](.gitlab-ci.yml)) и [GitVerse](https://gitverse.ru/mellaque/chelyabinsk-air-gis);
+это точные копии GitHub, см. [Зеркала](#зеркала).
 
 Проект выполнен как выпускная квалификационная работа (бакалавриат, УУНиТ).
 
@@ -153,7 +154,7 @@ python scripts/validate_data.py
 | Проверка | Что делает |
 |---|---|
 | **Ruff** | стиль кода и типичные ошибки в Python |
-| **pytest** (Python 3.12 и 3.14) | тесты обработки NetCDF → JSON и проверки данных на синтетических файлах; тесты загрузчика на локальном «фальшивом NASA» (каталог, авторизация, редирект без утечки токена, докачка, повторы) |
+| **pytest** (Python 3.12 и 3.14) | тесты обработки NetCDF → JSON и проверки данных на синтетических файлах; тесты загрузчика на локальном «фальшивом NASA» (каталог, авторизация, редирект без утечки токена, докачка, повторы); тесты синхронизации зеркал на локальных git-репозиториях |
 | **Проверка данных** | `scripts/validate_data.py`: все `data/*.json` в актуальном формате, размерности совпадают, нет NaN и отрицательных значений, у проверенных данных указан источник, в `region.geojson` нет битой кодировки |
 | **Фронтенд** | синтаксис `js/app.js`, подключённые в `index.html` файлы существуют |
 | **Docker** | hadolint проверяет Dockerfile, оба образа собираются, контейнер стартует с ограниченными правами и становится healthy, smoke-тест (`scripts/smoke_test.sh`) проверяет страницы, данные, сжатие и заголовки |
@@ -184,6 +185,23 @@ python scripts/validate_data.py
 стадии, `parallel:matrix` для версий Python, сборка и smoke-тест образов в docker-in-docker,
 Trivy по сохранённым образам из артефактов, встроенные шаблоны SAST и поиска секретов,
 отчёты тестов (JUnit) и качества кода (Code Quality) в merge request.
+
+### Зеркала
+
+GitHub — источник истины, GitLab и GitVerse — его точные копии: те же ветки и теги на тех же
+коммитах. Изменения попадают в `main` только через pull request на GitHub, а на зеркала их переносит
+[`scripts/sync_mirrors.sh`](scripts/sync_mirrors.sh): добавляет недостающее, обновляет изменившееся
+и удаляет лишнее — в том числе ветки, которые GitHub сам удаляет после мержа pull request.
+
+```bash
+sh scripts/sync_mirrors.sh --check   # только показать расхождения
+sh scripts/sync_mirrors.sh           # синхронизировать
+```
+
+Зеркала — только для чтения: то, что запушено прямо в них, будет перезаписано, как при
+`git push --mirror`. Если с GitHub не пришло ни одной ветки, скрипт ничего не трогает; локальные
+ветки и теги на зеркала не попадают; два запуска одновременно не идут. Тесты — на локальных
+репозиториях, без сети ([`tests/test_sync_mirrors.py`](tests/test_sync_mirrors.py)).
 
 ## Безопасность
 
@@ -224,6 +242,7 @@ Trivy по сохранённым образам из артефактов, вс
 │   ├── update_data.sh          # загрузка + обработка + проверка всех веществ
 │   ├── validate_data.py        # проверка формата данных (CI и сборка образа)
 │   ├── smoke_test.sh           # проверка запущенного сайта
+│   ├── sync_mirrors.sh         # синхронизация зеркал GitLab и GitVerse с GitHub
 │   ├── prepare_region.py       # подготовка границ из выгрузки OSM
 │   └── legacy/                 # скрипты версии ВКР
 ├── tests/                      # pytest

@@ -86,6 +86,8 @@ pytest:
     key: pip-$PYTHON_VERSION
     paths: [.cache/pip]
   script:
+    # git нужен тестам синхронизации зеркал (tests/test_sync_mirrors.py), в slim-образе его нет
+    - apt-get update -qq && apt-get install -y -qq --no-install-recommends git > /dev/null
     - pip install -r requirements-dev.txt
     - pytest --junitxml=report.xml
   artifacts:
