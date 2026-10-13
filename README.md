@@ -229,6 +229,11 @@ sh scripts/sync_mirrors.sh           # синхронизировать
 ветки и теги на зеркала не попадают; два запуска одновременно не идут. Тесты — на локальных
 репозиториях, без сети ([`tests/test_sync_mirrors.py`](tests/test_sync_mirrors.py)).
 
+Merge-коммиты, которые GitHub создаёт при мерже pull request, подписаны ключом самого GitHub.
+GitHub показывает их как Verified, а GitLab и GitVerse — как неподтверждённые («Unverified»,
+«Не верифицирован»): ключ GitHub не привязан ни к одной учётной записи на этих площадках.
+Для зеркал это ожидаемо; подписи проверяются на GitHub.
+
 ## Безопасность
 
 - **Trivy** проверяет зависимости, оба Docker-образа, секреты и конфигурацию; **CodeQL** — код на Python
@@ -263,10 +268,7 @@ sh scripts/sync_mirrors.sh           # синхронизировать
 │   ├── cities.json             # города и их координаты
 │   └── substances.json         # вещества → продукты NASA TCR-2 и единицы
 ├── data/
-│   ├── hno3_data.json          # HNO₃: 6 городов, 2011–2021, 27 уровней
-│   ├── co_data.json            # CO, H₂O, O₃ — данные версии ВКР (не проверены)
-│   ├── h2o_data.json
-│   ├── o3_data.json
+│   ├── <вещество>_data.json    # no2, so2, co, o3, ch2o, hno3, h2o: 6 городов, 2005–2021, 27 уровней
 │   ├── region.geojson          # граница области и районов
 │   └── raw/                    # исходные NetCDF (не хранятся в git)
 ├── scripts/
@@ -281,6 +283,8 @@ sh scripts/sync_mirrors.sh           # синхронизировать
 │   └── legacy/                 # скрипты версии ВКР
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных
+├── SECURITY.md                 # как сообщить об уязвимости, меры безопасности, проверка подписи
+├── requirements*.txt           # версии Python-пакетов: пайплайн, разработка, линтеры
 ├── .gitlab-ci.yml              # CI для зеркала на GitLab
 ├── .github/
 │   ├── workflows/ci.yml        # CI/CD: проверки, публикация образов и сайта
@@ -357,3 +361,4 @@ sh scripts/sync_mirrors.sh           # синхронизировать
 ## Лицензия
 
 Код — [MIT](LICENSE). Данные — по условиям их правообладателей (NASA, участники OpenStreetMap).
+Библиотеки в `vendor/` — по своим лицензиям (BSD-2-Clause, MIT, SIL OFL 1.1, CC BY 4.0), файлы лицензий лежат рядом.

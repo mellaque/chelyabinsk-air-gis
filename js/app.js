@@ -76,7 +76,7 @@ const baseLayers = {
 };
 L.control.layers(baseLayers, null, { position: 'topleft', collapsed: true }).addTo(map);
 Object.values(baseLayers)[0].addTo(map);
-map.attributionControl.addAttribution('Данные: NASA TROPESS, Aura MLS');
+map.attributionControl.addAttribution('Данные: NASA TROPESS (реанализ TCR-2)');
 
 if (window.innerWidth < 768) map.setView([55.0, 60.0], 6);
 
