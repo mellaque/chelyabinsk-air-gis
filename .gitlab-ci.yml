@@ -54,12 +54,16 @@ ruff:
     reports:
       codequality: gl-code-quality-report.json   # замечания видны прямо в merge request
 
-hadolint:
+linters:
   stage: lint
   image: $PYTHON_IMAGE
   script:
-    - pip install hadolint-bin==2.15.1
+    - pip install -r requirements-lint.txt   # те же версии, что в GitHub Actions
     - hadolint Dockerfile Dockerfile.pipeline
+    - shellcheck scripts/*.sh
+    # Workflow GitHub Actions лежат в этом же репозитории. Без токена GitHub zizmor проверяет офлайн
+    - actionlint
+    - zizmor --offline .
 
 frontend:
   stage: lint

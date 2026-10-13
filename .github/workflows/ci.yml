@@ -1,5 +1,5 @@
 # CI/CD проекта.
-#   Pull request      → проверки (python, data, frontend, docker). Красный PR не мержим.
+#   Pull request      → проверки (lint, python, data, frontend, docker). Красный PR не мержим.
 #   Push в main       → те же проверки, затем публикация образов в GHCR и сайта на GitHub Pages.
 #   Тег vX.Y.Z        → проверки и образы с номером версии (например, :2.0.0 и :2.0).
 name: CI
@@ -20,6 +20,34 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  lint:
+    name: Линтеры — workflow и shell-скрипты
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false   # git-токен после checkout не нужен — не оставляем его на диске
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Установка линтеров (версии — в requirements-lint.txt)
+        run: pip install -r requirements-lint.txt
+
+      - name: actionlint — синтаксис и выражения workflow, shellcheck для шагов run
+        run: actionlint
+
+      - name: zizmor — безопасность workflow и настроек Dependabot
+        env:
+          # токен только на чтение: онлайн-проверки (уязвимые версии actions, подменённые коммиты)
+          GH_TOKEN: ${{ github.token }}
+        run: zizmor --format=github .
+
+      - name: shellcheck — скрипты
+        run: shellcheck scripts/*.sh
+
   python:
     name: Python ${{ matrix.python-version }} — ruff и тесты
     runs-on: ubuntu-latest
@@ -105,7 +133,7 @@ jobs:
 
       - name: Hadolint — проверка Dockerfile
         run: |
-          pip install hadolint-bin==2.15.1
+          pip install "$(grep '^hadolint-bin==' requirements-lint.txt)"   # версия — из requirements-lint.txt
           hadolint Dockerfile Dockerfile.pipeline
 
       - name: Проверка compose.yaml
@@ -170,6 +198,9 @@ jobs:
         run: docker image ls --format 'table {{.Repository}}:{{.Tag}}\t{{.Size}}' | grep -E 'REPOSITORY|air-gis'
 
   # ---------------- Публикация (только после успешных проверок, только main и теги) ----------------
+  # Линтеры публикацию не задерживают: zizmor обращается к API GitHub, и сбой API или новое
+  # предупреждение о уязвимости в action не должны останавливать деплой. В main линтеры
+  # попадают как проверка pull request.
 
   publish-images:
     name: Публикация образа ${{ matrix.image }} в GHCR

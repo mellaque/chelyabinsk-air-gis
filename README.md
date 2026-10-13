@@ -153,6 +153,7 @@ python scripts/validate_data.py
 
 | Проверка | Что делает |
 |---|---|
+| **Линтеры** | actionlint и [zizmor](https://docs.zizmor.sh/) проверяют workflow GitHub Actions (синтаксис, выражения, безопасность, известные уязвимости в actions), shellcheck — shell-скрипты; версии — в `requirements-lint.txt` |
 | **Ruff** | стиль кода и типичные ошибки в Python |
 | **pytest** (Python 3.12 и 3.14) | тесты обработки NetCDF → JSON и проверки данных на синтетических файлах; тесты загрузчика на локальном «фальшивом NASA» (каталог, авторизация, редирект без утечки токена, докачка, повторы); тесты синхронизации зеркал на локальных git-репозиториях |
 | **Проверка данных** | `scripts/validate_data.py`: все `data/*.json` в актуальном формате, размерности совпадают, нет NaN и отрицательных значений, у проверенных данных указан источник, в `region.geojson` нет битой кодировки |
@@ -173,10 +174,11 @@ python scripts/validate_data.py
 Проверки локально:
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -r requirements-dev.txt -r requirements-lint.txt
 ruff check .
 pytest
 python scripts/validate_data.py
+actionlint && zizmor --offline . && shellcheck scripts/*.sh
 ```
 
 Обновления зависимостей и версий actions раз в месяц предлагает Dependabot.
@@ -210,7 +212,7 @@ sh scripts/sync_mirrors.sh           # синхронизировать
   ([`security.yml`](.github/workflows/security.yml)).
 - Образ с критической уязвимостью, для которой уже есть исправление, не проходит CI.
 - Все GitHub Actions закреплены по хешу коммита, у каждого job — минимальные права;
-  workflow проверяются линтерами actionlint и [zizmor](https://docs.zizmor.sh/).
+  workflow при каждом PR проверяют actionlint и [zizmor](https://docs.zizmor.sh/) (job «Линтеры»).
 - Опубликованные образы подписаны **cosign** (Sigstore, без ключей), к ним приложены **SBOM**
   (список пакетов) и **provenance** (из какого коммита и каким workflow собран образ).
 

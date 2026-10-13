@@ -15,6 +15,7 @@
 | Образ с критической уязвимостью, для которой есть исправление, не проходит CI | `.github/workflows/ci.yml`, job Docker |
 | Обновления зависимостей и actions | Dependabot, раз в месяц |
 | Все actions закреплены по хешу коммита, у job минимальные права | `.github/workflows/*.yml` |
+| Workflow проверяют actionlint и zizmor, shell-скрипты — shellcheck | `.github/workflows/ci.yml`, job «Линтеры» |
 | Образы подписаны (Sigstore cosign), к ним приложены SBOM и provenance | GitHub Container Registry |
 | Контейнер сайта: nginx не от root, файловая система только для чтения, без capabilities | `Dockerfile`, `compose.yaml` |
 
