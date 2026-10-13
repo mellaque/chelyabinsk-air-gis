@@ -14,7 +14,7 @@ RUN python scripts/validate_data.py
 FROM nginxinc/nginx-unprivileged:1.30-alpine-slim
 
 LABEL org.opencontainers.image.title="chelyabinsk-air-gis" \
-      org.opencontainers.image.description="Веб-ГИС: концентрации HNO₃, CO, H₂O, O₃ над Челябинской областью по спутниковым данным NASA" \
+      org.opencontainers.image.description="Веб-ГИС: NO₂, SO₂, CO, O₃, формальдегид, HNO₃ и водяной пар над Челябинской областью по реанализу NASA TROPESS" \
       org.opencontainers.image.source="https://github.com/mellaque/chelyabinsk-air-gis" \
       org.opencontainers.image.licenses="MIT"
 
@@ -22,6 +22,7 @@ COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY index.html /usr/share/nginx/html/
 COPY css/ /usr/share/nginx/html/css/
 COPY js/ /usr/share/nginx/html/js/
+COPY vendor/ /usr/share/nginx/html/vendor/
 # Данные берём из первого этапа — то есть именно те, что прошли проверку
 COPY --from=validate /app/data/ /usr/share/nginx/html/data/
 

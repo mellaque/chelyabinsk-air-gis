@@ -1,0 +1,6 @@
+# Линтеры для CI: workflow GitHub Actions (actionlint, zizmor), shell-скрипты (shellcheck),
+# Dockerfile (hadolint). Версии зафиксированы, обновления раз в месяц предлагает Dependabot.
+actionlint-py==1.7.12.25
+hadolint-bin==2.15.1
+shellcheck-py==0.11.0.1
+zizmor==1.30.1

@@ -76,7 +76,7 @@ const baseLayers = {
 };
 L.control.layers(baseLayers, null, { position: 'topleft', collapsed: true }).addTo(map);
 Object.values(baseLayers)[0].addTo(map);
-map.attributionControl.addAttribution('Данные: NASA TROPESS, Aura MLS');
+map.attributionControl.addAttribution('Данные: NASA TROPESS (реанализ TCR-2)');
 
 if (window.innerWidth < 768) map.setView([55.0, 60.0], 6);
 
@@ -353,13 +353,16 @@ function updateLegend(sel, scale) {
     const gradient = sel.substanceConfig.colorScale.join(', ');
     el('concentration-legend').innerHTML = `
         <h4><i class="fas fa-flask"></i> ${sel.substanceConfig.name}, ${units}</h4>
-        <div class="legend-gradient" style="background: linear-gradient(to right, ${gradient});"></div>
+        <div class="legend-gradient"></div>
         <div class="legend-labels">
             <span>${scale ? formatValue(scale.min) : '—'}</span>
             <span>${scale ? formatValue(scale.max) : '—'}</span>
         </div>
         <div class="legend-nodata"><span class="swatch"></span> нет данных</div>
         <div class="legend-note">Шкала для выбранного уровня, все годы и месяцы</div>`;
+    // Цвет — через свойство element.style, а не атрибутом в разметке: CSP запрещает встроенные стили
+    el('concentration-legend').querySelector('.legend-gradient').style.background =
+        `linear-gradient(to right, ${gradient})`;
 }
 
 function updateInfoPanel() {

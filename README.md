@@ -34,7 +34,8 @@ pull request и основной CI/CD. Зеркала: [GitLab](https://gitlab.
 
 ## Стек
 
-HTML, CSS, JavaScript, [Leaflet](https://leafletjs.com/), [Chart.js](https://www.chartjs.org/).
+HTML, CSS, JavaScript, [Leaflet](https://leafletjs.com/), [Chart.js](https://www.chartjs.org/), Font Awesome, шрифт
+Open Sans. Библиотеки лежат в репозитории (`vendor/`), а не подключаются с CDN — см. [Библиотеки фронтенда](#библиотеки-фронтенда).
 Обработка данных — Python (netCDF4, NumPy). Тесты — pytest, линтер — Ruff, CI — GitHub Actions.
 Развёртывание — Docker, nginx (непривилегированный образ), Docker Compose.
 
@@ -153,10 +154,11 @@ python scripts/validate_data.py
 
 | Проверка | Что делает |
 |---|---|
+| **Линтеры** | actionlint и [zizmor](https://docs.zizmor.sh/) проверяют workflow GitHub Actions (синтаксис, выражения, безопасность, известные уязвимости в actions), shellcheck — shell-скрипты; версии — в `requirements-lint.txt` |
 | **Ruff** | стиль кода и типичные ошибки в Python |
 | **pytest** (Python 3.12 и 3.14) | тесты обработки NetCDF → JSON и проверки данных на синтетических файлах; тесты загрузчика на локальном «фальшивом NASA» (каталог, авторизация, редирект без утечки токена, докачка, повторы); тесты синхронизации зеркал на локальных git-репозиториях |
 | **Проверка данных** | `scripts/validate_data.py`: все `data/*.json` в актуальном формате, размерности совпадают, нет NaN и отрицательных значений, у проверенных данных указан источник, в `region.geojson` нет битой кодировки |
-| **Фронтенд** | синтаксис `js/app.js`, подключённые в `index.html` файлы существуют |
+| **Фронтенд** | файлы в `vendor/` побайтно совпадают с пакетами npm из `package-lock.json`, синтаксис `js/*.js`, подключённые в `index.html` файлы существуют |
 | **Docker** | hadolint проверяет Dockerfile, оба образа собираются, контейнер стартует с ограниченными правами и становится healthy, smoke-тест (`scripts/smoke_test.sh`) проверяет страницы, данные, сжатие и заголовки |
 
 Если все проверки прошли и изменения попали в `main`, выполняется публикация:
@@ -170,21 +172,45 @@ python scripts/validate_data.py
 Тег вида `v2.0.0` публикует образы с номером версии (`:2.0.0`, `:2.0`).
 В `main` код попадает только через pull request с зелёными проверками (ruleset ветки).
 
+Публикуется ровно тот образ, который проверен. Сначала образ уходит в реестр без тегов, только по
+digest; этот digest запускается с теми же ограничениями, что в `compose.yaml`, проходит smoke-тест
+и проверку Trivy и подписывается cosign. Только после этого на него вешаются теги `latest`,
+`sha-<коммит>` и версии — без пересборки, так что тег указывает ровно на подписанный digest.
+Если проверка не прошла, теги остаются на прежнем образе.
+
+Базовые образы и версии Python-пакетов, actions и линтеров раз в месяц обновляет Dependabot
+(не раньше чем через 7 дней после выхода версии).
+
 Проверки локально:
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -r requirements-dev.txt -r requirements-lint.txt
 ruff check .
 pytest
 python scripts/validate_data.py
+actionlint && zizmor --offline . && shellcheck scripts/*.sh
 ```
-
-Обновления зависимостей и версий actions раз в месяц предлагает Dependabot.
 
 На зеркале GitLab те же проверки описаны в [`.gitlab-ci.yml`](.gitlab-ci.yml) средствами GitLab:
 стадии, `parallel:matrix` для версий Python, сборка и smoke-тест образов в docker-in-docker,
 Trivy по сохранённым образам из артефактов, встроенные шаблоны SAST и поиска секретов,
 отчёты тестов (JUnit) и качества кода (Code Quality) в merge request.
+
+### Библиотеки фронтенда
+
+Leaflet, Chart.js, Font Awesome и шрифт Open Sans подключаются из `vendor/`, а не с CDN: сайт
+не зависит от чужих серверов, а Content-Security-Policy в `index.html` разрешает скрипты, стили и
+шрифты только со своего адреса. Версии — в `package.json`, архивы и их хеши — в `package-lock.json`;
+CI проверяет, что `vendor/` побайтно совпадает с пакетами npm. Обновить библиотеку:
+
+```bash
+npm install leaflet@<версия> --save-exact --ignore-scripts   # меняет package.json и package-lock.json
+python scripts/vendor_frontend.py                             # копирует нужные файлы в vendor/
+```
+
+Версии библиотек фронтенда Dependabot не обновляет — это осознанный шаг по командам выше.
+Если он откроет pull request для уязвимой версии, проверка `vendor/` в CI не пройдёт, пока в ветке PR
+не выполнить `npm ci --ignore-scripts && python scripts/vendor_frontend.py` и не закоммитить `vendor/`.
 
 ### Зеркала
 
@@ -203,6 +229,11 @@ sh scripts/sync_mirrors.sh           # синхронизировать
 ветки и теги на зеркала не попадают; два запуска одновременно не идут. Тесты — на локальных
 репозиториях, без сети ([`tests/test_sync_mirrors.py`](tests/test_sync_mirrors.py)).
 
+Merge-коммиты, которые GitHub создаёт при мерже pull request, подписаны ключом самого GitHub.
+GitHub показывает их как Verified, а GitLab и GitVerse — как неподтверждённые («Unverified»,
+«Не верифицирован»): ключ GitHub не привязан ни к одной учётной записи на этих площадках.
+Для зеркал это ожидаемо; подписи проверяются на GitHub.
+
 ## Безопасность
 
 - **Trivy** проверяет зависимости, оба Docker-образа, секреты и конфигурацию; **CodeQL** — код на Python
@@ -210,7 +241,10 @@ sh scripts/sync_mirrors.sh           # синхронизировать
   ([`security.yml`](.github/workflows/security.yml)).
 - Образ с критической уязвимостью, для которой уже есть исправление, не проходит CI.
 - Все GitHub Actions закреплены по хешу коммита, у каждого job — минимальные права;
-  workflow проверяются линтерами actionlint и [zizmor](https://docs.zizmor.sh/).
+  workflow при каждом PR проверяют actionlint и [zizmor](https://docs.zizmor.sh/) (job «Линтеры»).
+- Страница загружает скрипты, стили и шрифты только со своего адреса: библиотеки лежат в `vendor/`,
+  а **Content-Security-Policy** запрещает чужой и встроенный код (тесты следят, чтобы он не появился).
+  Уязвимые версии библиотек фронтенда Trivy находит по `package-lock.json`.
 - Опубликованные образы подписаны **cosign** (Sigstore, без ключей), к ним приложены **SBOM**
   (список пакетов) и **provenance** (из какого коммита и каким workflow собран образ).
 
@@ -224,16 +258,17 @@ sh scripts/sync_mirrors.sh           # синхронизировать
 ├── Dockerfile.pipeline         # образ пайплайна обработки NetCDF
 ├── compose.yaml                # запуск: docker compose up
 ├── deploy/nginx.conf           # конфигурация nginx
-├── css/map-controls.css        # стили
+├── css/map-controls.css        # стили карты и элементов управления
+├── css/page.css                # стили страницы
 ├── js/app.js                   # карта, график, анимации
+├── js/theme.js                 # светлая и тёмная тема
+├── vendor/                     # Leaflet, Chart.js, Font Awesome, Open Sans — из npm
+├── package.json                # версии библиотек фронтенда (хеши — в package-lock.json)
 ├── config/
 │   ├── cities.json             # города и их координаты
 │   └── substances.json         # вещества → продукты NASA TCR-2 и единицы
 ├── data/
-│   ├── hno3_data.json          # HNO₃: 6 городов, 2011–2021, 27 уровней
-│   ├── co_data.json            # CO, H₂O, O₃ — данные версии ВКР (не проверены)
-│   ├── h2o_data.json
-│   ├── o3_data.json
+│   ├── <вещество>_data.json    # no2, so2, co, o3, ch2o, hno3, h2o: 6 городов, 2005–2021, 27 уровней
 │   ├── region.geojson          # граница области и районов
 │   └── raw/                    # исходные NetCDF (не хранятся в git)
 ├── scripts/
@@ -243,10 +278,13 @@ sh scripts/sync_mirrors.sh           # синхронизировать
 │   ├── validate_data.py        # проверка формата данных (CI и сборка образа)
 │   ├── smoke_test.sh           # проверка запущенного сайта
 │   ├── sync_mirrors.sh         # синхронизация зеркал GitLab и GitVerse с GitHub
+│   ├── vendor_frontend.py      # библиотеки фронтенда: node_modules → vendor/
 │   ├── prepare_region.py       # подготовка границ из выгрузки OSM
 │   └── legacy/                 # скрипты версии ВКР
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных
+├── SECURITY.md                 # как сообщить об уязвимости, меры безопасности, проверка подписи
+├── requirements*.txt           # версии Python-пакетов: пайплайн, разработка, линтеры
 ├── .gitlab-ci.yml              # CI для зеркала на GitLab
 ├── .github/
 │   ├── workflows/ci.yml        # CI/CD: проверки, публикация образов и сайта
@@ -323,3 +361,4 @@ sh scripts/sync_mirrors.sh           # синхронизировать
 ## Лицензия
 
 Код — [MIT](LICENSE). Данные — по условиям их правообладателей (NASA, участники OpenStreetMap).
+Библиотеки в `vendor/` — по своим лицензиям (BSD-2-Clause, MIT, SIL OFL 1.1, CC BY 4.0), файлы лицензий лежат рядом.

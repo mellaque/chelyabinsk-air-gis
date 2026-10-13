@@ -27,3 +27,6 @@ Thumbs.db
 
 # Секреты (токен Earthdata для docker compose)
 .env
+
+# Пакеты npm: нужные файлы копируются в vendor/ (scripts/vendor_frontend.py)
+node_modules/
