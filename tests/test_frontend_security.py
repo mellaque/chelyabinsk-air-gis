@@ -1,9 +1,14 @@
 """Страница не загружает чужой код и не содержит встроенных скриптов и стилей — иначе
-Content-Security-Policy из index.html заблокировала бы их в браузере (или пришлось бы её ослабить)."""
+Content-Security-Policy из index.html заблокировала бы их в браузере (или пришлось бы её ослабить).
+
+Имена тегов и атрибутов в HTML не зависят от регистра — браузер выполнит и <SCRIPT>, и ONCLICK=,
+поэтому все проверки разметки регистронезависимы (?i)."""
 
 import json
 import re
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = (ROOT / "index.html").read_text(encoding="utf-8")
@@ -11,12 +16,27 @@ SCRIPTS = {p.name: p.read_text(encoding="utf-8") for p in (ROOT / "js").glob("*.
 
 
 def csp() -> dict[str, list[str]]:
-    content = re.search(r'<meta http-equiv="Content-Security-Policy" content="([^"]+)"', HTML).group(1)
+    content = re.search(r'(?i)<meta http-equiv="Content-Security-Policy" content="([^"]+)"', HTML).group(1)
     return {d.split()[0]: d.split()[1:] for d in (part.strip() for part in content.split(";")) if d}
 
 
-def local_resources() -> list[str]:
-    return re.findall(r'<(?:script|link)[^>]*\s(?:src|href)="([^"]+)"', HTML)
+def resources(html: str) -> list[str]:
+    """Адреса подключённых скриптов и стилей."""
+    return re.findall(r'(?i)<(?:script|link)[^>]*\s(?:src|href)="([^"]+)"', html)
+
+
+def inline_code(html: str) -> list[str]:
+    """Встроенный код в разметке: <style>, <script> без src, атрибуты style= и on…=."""
+    found = []
+    if "<style" in html.lower():
+        found.append("<style>")
+    if re.search(r"(?i)<script(?![^>]*\ssrc=)[^>]*>", html):
+        found.append("<script> без src")
+    if re.search(r"(?i)\sstyle=", html):
+        found.append("атрибут style")
+    if re.search(r"(?i)\son[a-z]+=", html):
+        found.append("обработчик события в атрибуте")
+    return found
 
 
 def test_csp_allows_only_own_code():
@@ -28,24 +48,41 @@ def test_csp_allows_only_own_code():
 
 
 def test_page_loads_scripts_and_styles_only_from_itself():
-    resources = local_resources()
-    assert resources, "в index.html не найдено ни одного скрипта или стиля"
-    for url in resources:
+    urls = resources(HTML)
+    assert urls, "в index.html не найдено ни одного скрипта или стиля"
+    for url in urls:
         assert not re.match(r"(https?:)?//", url), f"внешний ресурс: {url}"
         assert (ROOT / url).is_file(), f"нет файла {url}"
 
 
 def test_page_has_no_inline_scripts_styles_or_handlers():
-    assert "<style" not in HTML
-    assert not re.search(r"<script(?![^>]*\ssrc=)[^>]*>", HTML), "встроенный <script> без src"
-    assert not re.search(r"\sstyle=", HTML), "атрибут style"
-    assert not re.search(r"\son[a-z]+=", HTML), "обработчик события в атрибуте"
+    assert inline_code(HTML) == []
+
+
+@pytest.mark.parametrize("html", [
+    "<SCRIPT>alert(1)</SCRIPT>",
+    '<Script type="module">run()</Script>',
+    "<STYLE>body { color: red }</STYLE>",
+    '<div STYLE="color: red">',
+    '<button ONCLICK="run()">',
+])
+def test_inline_code_is_found_in_any_case(html):
+    assert inline_code(html)
+
+
+def test_scripts_with_src_are_not_inline_code():
+    assert inline_code('<script src="js/app.js"></script><SCRIPT SRC="js/theme.js"></SCRIPT>') == []
+
+
+def test_resources_are_found_in_any_case():
+    html = '<SCRIPT SRC="https://cdn.example.com/x.js"></SCRIPT><LINK REL="stylesheet" HREF="//cdn.example.com/x.css">'
+    assert resources(html) == ["https://cdn.example.com/x.js", "//cdn.example.com/x.css"]
 
 
 def test_scripts_do_not_insert_inline_styles_or_handlers():
     for name, js in SCRIPTS.items():
-        assert not re.search(r"""style\s*=\s*["']""", js), f"{name}: style=\"…\" в разметке"
-        assert not re.search(r"""\son[a-z]+\s*=\s*["']""", js), f"{name}: обработчик события в разметке"
+        assert not re.search(r"""(?i)style\s*=\s*["']""", js), f"{name}: style=\"…\" в разметке"
+        assert not re.search(r"""(?i)\son[a-z]+\s*=\s*["']""", js), f"{name}: обработчик события в разметке"
         assert "eval(" not in js and "new Function" not in js, name
 
 

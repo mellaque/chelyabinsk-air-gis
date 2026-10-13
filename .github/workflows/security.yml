@@ -123,6 +123,11 @@ jobs:
           languages: ${{ matrix.language }}
           build-mode: none            # интерпретируемые языки — сборка не нужна
           queries: security-extended  # расширенный набор правил безопасности
+          # Сторонние библиотеки в vendor/ не анализируем: это не наш код (он побайтно совпадает
+          # с пакетами npm), а их известные уязвимости по package-lock.json находит Trivy
+          config: |
+            paths-ignore:
+              - vendor
 
       - uses: github/codeql-action/analyze@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2  # v4.38.2
         with:
