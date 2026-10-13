@@ -202,12 +202,20 @@ jobs:
   # предупреждение о уязвимости в action не должны останавливать деплой. В main линтеры
   # попадают как проверка pull request.
 
+  # Публикуется ровно тот образ, который проверен: образ уходит в реестр без тегов, по digest;
+  # этот digest запускается и проверяется (smoke-тест, Trivy), подписывается — и только потом
+  # получает теги latest, sha-… и версии. Если проверка не прошла, теги остаются на прежнем образе.
   publish-images:
     name: Публикация образа ${{ matrix.image }} в GHCR
     needs: [python, data, frontend, docker]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    # Публикации одного образа — по очереди: если тег vX.Y.Z поставлен сразу после мержа,
+    # запуски из main и из тега иначе перевешивали бы latest и sha-… наперегонки
+    concurrency:
+      group: publish-${{ matrix.image }}
+      cancel-in-progress: false
     permissions:
       contents: read
       packages: write           # право публиковать образы в GitHub Container Registry
@@ -219,6 +227,8 @@ jobs:
             dockerfile: Dockerfile
           - image: chelyabinsk-air-gis-pipeline
             dockerfile: Dockerfile.pipeline
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -237,35 +247,91 @@ jobs:
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302  # v6.2.0
         with:
-          images: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+          images: ${{ env.IMAGE }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=short
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      - name: Сборка и публикация
+      - name: Сборка и отправка в реестр без тегов — только по digest
         id: build
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc  # v7.4.0
         with:
           context: .
           file: ${{ matrix.dockerfile }}
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          outputs: type=image,name=${{ env.IMAGE }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
           sbom: true                    # список всех пакетов в образе (SBOM) — прикладывается к образу
           provenance: mode=max          # откуда и как собран образ (коммит, workflow, параметры)
 
+      - name: Проверка опубликованного образа сайта — запуск и smoke-тест
+        if: matrix.image == 'chelyabinsk-air-gis'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          docker run -d --name web -p 8080:8080 \
+            --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
+            "${IMAGE}@${DIGEST}"
+          state=starting
+          for _ in $(seq 1 30); do
+            state=$(docker inspect --format '{{.State.Health.Status}}' web)
+            [ "$state" = "healthy" ] && break
+            sleep 2
+          done
+          if [ "$state" != "healthy" ]; then
+            docker logs web
+            echo "::error::опубликованный образ не стал healthy за 60 секунд"
+            exit 1
+          fi
+          bash scripts/smoke_test.sh http://localhost:8080
+
+      - name: Проверка опубликованного образа пайплайна — запуск
+        if: matrix.image == 'chelyabinsk-air-gis-pipeline'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: docker run --rm "${IMAGE}@${DIGEST}" --help
+
+      - name: Trivy — критические уязвимости в опубликованном образе
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
+        with:
+          version: v0.75.0
+          image-ref: ${{ env.IMAGE }}@${{ steps.build.outputs.digest }}
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
       - uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6  # v4.1.2
 
       - name: Подпись образа (cosign, без ключей)
         env:
-          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
           DIGEST: ${{ steps.build.outputs.digest }}
         # Подписывается конкретный digest, а не тег: тег можно перевесить, digest — нет
         run: cosign sign --yes "${IMAGE}@${DIGEST}"
+
+      - name: Теги — на проверенный и подписанный digest, без пересборки
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+          TAGS: ${{ steps.meta.outputs.tags }}
+        # --prefer-index=false — точная копия: тег указывает ровно на подписанный digest,
+        # и cosign verify по тегу находит подпись. Ниже это проверяется для каждого тега.
+        run: |
+          args=()
+          while IFS= read -r tag; do
+            [ -n "$tag" ] && args+=(--tag "$tag")
+          done <<< "$TAGS"
+          docker buildx imagetools create --prefer-index=false "${args[@]}" "${IMAGE}@${DIGEST}"
+          while IFS= read -r tag; do
+            [ -n "$tag" ] || continue
+            got=$(docker buildx imagetools inspect "$tag" --format '{{.Manifest.Digest}}')
+            if [ "$got" != "$DIGEST" ]; then
+              echo "::error::тег $tag указывает на $got, а не на проверенный $DIGEST"
+              exit 1
+            fi
+            echo "ok  $tag → $DIGEST"
+          done <<< "$TAGS"
 
   pages:
     name: Публикация сайта на GitHub Pages

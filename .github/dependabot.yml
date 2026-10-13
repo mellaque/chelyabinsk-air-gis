@@ -28,3 +28,20 @@ updates:
     groups:                       # все обновления Python-пакетов — одним PR
       python:
         patterns: ["*"]
+
+  - package-ecosystem: docker    # базовые образы в Dockerfile и Dockerfile.pipeline
+    directory: /
+    schedule:
+      interval: monthly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "docker"
+    ignore:
+      # Образы остаются на Python 3.12 — минимальной поддерживаемой версии (CI проверяет 3.12 и 3.14).
+      # Когда базовые образы закреплены по digest (FROM …@sha256:…), Dependabot обновляет и digest.
+      - dependency-name: "python"
+        update-types: ["version-update:semver-minor"]
+    groups:
+      docker:
+        patterns: ["*"]

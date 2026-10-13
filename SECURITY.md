@@ -17,6 +17,8 @@
 | Все actions закреплены по хешу коммита, у job минимальные права | `.github/workflows/*.yml` |
 | Workflow проверяют actionlint и zizmor, shell-скрипты — shellcheck | `.github/workflows/ci.yml`, job «Линтеры» |
 | Образы подписаны (Sigstore cosign), к ним приложены SBOM и provenance | GitHub Container Registry |
+| Публикуется ровно проверенный образ: digest проходит smoke-тест и Trivy, подписывается и только потом получает теги | `.github/workflows/ci.yml`, job публикации |
+| Базовые образы обновляет Dependabot, новые версии — не раньше чем через 7 дней после выхода | `.github/dependabot.yml` |
 | Контейнер сайта: nginx не от root, файловая система только для чтения, без capabilities | `Dockerfile`, `compose.yaml` |
 
 ## Политика по уязвимостям
