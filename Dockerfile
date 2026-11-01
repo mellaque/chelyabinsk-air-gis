@@ -11,7 +11,7 @@ RUN python scripts/validate_data.py
 
 # ---------- Этап 2: веб-сервер ----------
 # nginx-unprivileged работает от непривилегированного пользователя и слушает порт 8080
-FROM nginxinc/nginx-unprivileged:1.30-alpine-slim
+FROM nginxinc/nginx-unprivileged:1.31-alpine-slim
 
 LABEL org.opencontainers.image.title="chelyabinsk-air-gis" \
       org.opencontainers.image.description="Веб-ГИС: NO₂, SO₂, CO, O₃, формальдегид, HNO₃ и водяной пар над Челябинской областью по реанализу NASA TROPESS" \
