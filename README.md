@@ -294,6 +294,7 @@ GitHub показывает их как Verified, а GitLab и GitVerse — ка
 │   ├── roles/base/             # роль: пакеты, SSH только по ключу, автообновления, часовой пояс, запрет сна, firewall
 │   ├── roles/docker/           # роль: Docker CE и Compose из репозитория Docker, ротация журналов контейнеров
 │   ├── roles/app/              # роль: проверка подписи образа (cosign) и запуск сайта по digest
+│   ├── roles/proxy/            # роль: обратный прокси Caddy, HTTPS с собственным центром сертификации
 │   └── vault.example.yml       # образец файла с секретами (настоящий — вне репозитория)
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных

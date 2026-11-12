@@ -6,6 +6,9 @@ app_image: ghcr.io/mellaque/chelyabinsk-air-gis
 # Каталог с compose.yaml на сервере
 app_dir: /opt/air-gis
 
+# Имя контейнера в общей сети proxy (на него ссылается роль proxy)
+app_network_alias: air-gis
+
 # Ограничения контейнера: nginx со статикой занимает около 10–20 МБ
 app_memory_limit: 64m
 app_cpus: "0.50"

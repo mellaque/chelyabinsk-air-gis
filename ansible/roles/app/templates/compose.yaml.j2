@@ -17,3 +17,11 @@ services:
     mem_limit: {{ app_memory_limit }}
     cpus: "{{ app_cpus }}"
     pids_limit: {{ app_pids_limit }}
+    networks:
+      proxy:
+        aliases:
+          - {{ app_network_alias }}   # под этим именем сайт видит обратный прокси
+
+networks:
+  proxy:
+    external: true                # общую сеть создаёт роль docker

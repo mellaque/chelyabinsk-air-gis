@@ -69,3 +69,21 @@
   loop:
     - containerd
     - docker
+
+- name: Общие сети Docker — какие уже есть
+  ansible.builtin.command:
+    argv: [docker, network, inspect, "{{ item }}"]
+  loop: "{{ docker_networks }}"
+  register: docker_networks_present
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Общие сети Docker созданы
+  ansible.builtin.command:
+    argv: [docker, network, create, "{{ item.item }}"]
+  loop: "{{ docker_networks_present.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  when: item.rc != 0
+  changed_when: true

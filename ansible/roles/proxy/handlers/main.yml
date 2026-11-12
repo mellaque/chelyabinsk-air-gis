@@ -1,0 +1,20 @@
+---
+# reload, а не перезапуск контейнера: Caddy применяет новую конфигурацию без обрыва соединений,
+# а при ошибке в ней остаётся на прежней
+- name: Перечитать конфигурацию Caddy
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ proxy_dir }}/compose.yaml"
+      - exec
+      - --no-TTY
+      - caddy
+      - caddy
+      - reload
+      - --config
+      - /etc/caddy/Caddyfile
+      - --adapter
+      - caddyfile
+  changed_when: true
