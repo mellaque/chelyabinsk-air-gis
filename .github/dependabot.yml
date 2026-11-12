@@ -17,7 +17,7 @@ updates:
       actions:
         patterns: ["*"]
 
-  - package-ecosystem: pip       # requirements.txt, requirements-dev.txt, requirements-lint.txt
+  - package-ecosystem: pip       # requirements.txt и requirements-{dev,lint,ansible}.txt
     directory: /
     schedule:
       interval: monthly

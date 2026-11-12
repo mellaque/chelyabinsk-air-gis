@@ -1,0 +1,17 @@
+---
+# Образец файла с секретами. Настоящий файл в репозитории не хранится — даже зашифрованный:
+# он лежит на управляющей машине вне клона, зашифрован ansible-vault и подключается при запуске.
+#
+#   mkdir -p ~/.config/air-gis
+#   cp vault.example.yml ~/.config/air-gis/vault.yml
+#   ansible-vault encrypt ~/.config/air-gis/vault.yml
+#   ansible-vault edit ~/.config/air-gis/vault.yml
+#   ansible-playbook playbook.yml -e @~/.config/air-gis/vault.yml --ask-vault-pass
+#
+# Значения ниже — заглушки. Переменные понадобятся ролям мониторинга.
+
+# Пароль администратора Grafana
+vault_grafana_admin_password: "заменить"
+
+# Адрес канала ntfy для уведомлений Alertmanager (имя канала — секрет: кто его знает, тот читает и пишет)
+vault_ntfy_topic_url: "https://ntfy.sh/заменить"
