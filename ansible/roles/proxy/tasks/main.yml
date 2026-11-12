@@ -1,0 +1,57 @@
+---
+# Обратный прокси Caddy: HTTPS с сертификатами собственного центра сертификации, единственная
+# точка входа веб-трафика. Сайты находит по именам контейнеров в общей сети Docker «proxy».
+
+- name: Каталог конфигурации
+  ansible.builtin.file:
+    path: "{{ proxy_dir }}/conf"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+# Перед заменой синтаксис проверяет сам Caddy из того же образа
+- name: Caddyfile
+  ansible.builtin.template:
+    src: Caddyfile.j2
+    dest: "{{ proxy_dir }}/conf/Caddyfile"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: >-
+      docker run --rm --network none --volume %s:/tmp/Caddyfile:ro {{ proxy_image }}
+      caddy adapt --config /tmp/Caddyfile --adapter caddyfile
+  notify: Перечитать конфигурацию Caddy
+
+- name: Описание сервиса — compose.yaml
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ proxy_dir }}/compose.yaml"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: docker compose -f %s config --quiet
+  register: proxy_compose
+
+- name: Работает ли контейнер
+  ansible.builtin.command:
+    argv: [docker, compose, -f, "{{ proxy_dir }}/compose.yaml", ps, --status, running, --quiet]
+  register: proxy_running
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: Caddy запущен и отвечает на healthcheck
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ proxy_dir }}/compose.yaml"
+      - up
+      - --detach
+      - --wait
+      - --wait-timeout
+      - "{{ proxy_wait_timeout }}"
+  changed_when: true
+  when: proxy_compose is changed or (proxy_running.stdout | default('') | trim) == ''

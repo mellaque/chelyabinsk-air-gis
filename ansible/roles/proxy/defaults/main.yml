@@ -1,0 +1,17 @@
+---
+# Образ Caddy: тег для человека, digest — для воспроизводимости (docker использует именно его).
+# Обновление: crane digest caddy:<версия>-alpine
+proxy_image: caddy:2.11.9-alpine@sha256:0bbb055bda6793c999bde78b1b5ce3e89f829fb031af2cf50056ea1246559fee
+
+# Каталог с compose.yaml и конфигурацией на сервере
+proxy_dir: /opt/proxy
+
+# Сайты: имя → контейнер в сети proxy. Домен home.arpa зарезервирован для домашних сетей (RFC 8375).
+proxy_sites:
+  - host: air-gis.home.arpa
+    upstream: air-gis:8080
+
+proxy_memory_limit: 128m
+proxy_cpus: "0.50"
+proxy_pids_limit: 128
+proxy_wait_timeout: 60
