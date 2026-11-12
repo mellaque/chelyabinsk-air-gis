@@ -24,3 +24,4 @@
           ({{ ansible_facts['architecture'] }}), ядро {{ ansible_facts['kernel'] }}
   roles:
     - role: base
+    - role: docker

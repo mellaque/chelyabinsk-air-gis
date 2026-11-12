@@ -1,0 +1,17 @@
+---
+# Ключ, которым Docker подписывает свой apt-репозиторий, и его контрольная сумма.
+# Сумма зафиксирована: если по адресу окажется другой файл, задача упадёт, а не доверит чужому ключу.
+docker_apt_key_url: https://download.docker.com/linux/debian/gpg
+docker_apt_key_checksum: sha256:1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570
+
+docker_packages:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+  - docker-buildx-plugin
+  - docker-compose-plugin
+
+# Журналы контейнеров: драйвер local (сжатие, ротация), не больше max-size × max-file на контейнер.
+# По умолчанию у Docker json-file без ограничения размера — на маленьком диске это рано или поздно его заполняет.
+docker_log_max_size: 10m
+docker_log_max_file: "3"

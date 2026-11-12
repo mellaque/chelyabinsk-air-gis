@@ -1,0 +1,71 @@
+---
+# Docker CE и Compose из официального репозитория Docker (в Debian пакет docker.io отстаёт
+# на несколько версий, а compose-плагина в нужном виде нет).
+# Роль никого не добавляет в группу docker: членство в ней равно правам root без пароля.
+
+- name: Каталог для ключей apt-репозиториев
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Ключ репозитория Docker
+  ansible.builtin.get_url:
+    url: "{{ docker_apt_key_url }}"
+    dest: /etc/apt/keyrings/docker.asc
+    checksum: "{{ docker_apt_key_checksum }}"
+    owner: root
+    group: root
+    mode: "0644"
+
+# Signed-By привязывает ключ только к этому репозиторию: пакеты Debian им подписать нельзя
+- name: Репозиторий Docker
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/docker.sources
+    content: |
+      Types: deb
+      URIs: https://download.docker.com/linux/debian
+      Suites: {{ ansible_facts['distribution_release'] }}
+      Components: stable
+      Signed-By: /etc/apt/keyrings/docker.asc
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Обновить список пакетов
+
+# Обработчики обычно выполняются в конце прогона, а список пакетов нужен уже следующей задаче
+- name: Список пакетов обновлён, если репозиторий изменился
+  ansible.builtin.meta: flush_handlers
+
+- name: Установлены Docker и плагины
+  ansible.builtin.apt:
+    name: "{{ docker_packages }}"
+    state: present   # не latest: версия меняется осознанно, а не при каждом прогоне
+    update_cache: true
+    cache_valid_time: 3600
+
+# Перед заменой файл проверяет сам dockerd: с ошибкой в daemon.json служба не запустится
+- name: Настройки демона — ротация журналов контейнеров
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+        "log-driver": "local",
+        "log-opts": { "max-size": "{{ docker_log_max_size }}", "max-file": "{{ docker_log_max_file }}" }
+      }
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/bin/dockerd --validate --config-file %s
+  notify: Перезапустить Docker
+
+- name: Docker и containerd запущены и включены при загрузке
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - containerd
+    - docker
