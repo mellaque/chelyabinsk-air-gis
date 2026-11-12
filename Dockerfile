@@ -2,7 +2,7 @@
 
 # ---------- Этап 1: проверка данных ----------
 # Если в data/ лежит файл неправильного формата, образ просто не соберётся.
-FROM python:3.12-slim AS validate
+FROM python:3.12-slim@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b AS validate
 WORKDIR /app
 COPY scripts/validate_data.py scripts/prepare_region.py scripts/
 COPY config/ config/
@@ -11,7 +11,7 @@ RUN python scripts/validate_data.py
 
 # ---------- Этап 2: веб-сервер ----------
 # nginx-unprivileged работает от непривилегированного пользователя и слушает порт 8080
-FROM nginxinc/nginx-unprivileged:1.31-alpine-slim
+FROM nginxinc/nginx-unprivileged:1.31-alpine-slim@sha256:a8cb0f33d51fa107c96fd2bd3a71aaf564ec131e9d2bdf8700944f0ed8b170d7
 
 LABEL org.opencontainers.image.title="chelyabinsk-air-gis" \
       org.opencontainers.image.description="Веб-ГИС: NO₂, SO₂, CO, O₃, формальдегид, HNO₃ и водяной пар над Челябинской областью по реанализу NASA TROPESS" \
