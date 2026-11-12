@@ -67,7 +67,7 @@ linters:
 
 ansible-lint:
   stage: lint
-  image: $PYTHON_IMAGE
+  image: python:3.14-slim   # не $PYTHON_IMAGE: новым ansible-core нужен Python 3.13+
   script:
     - pip install -r requirements-ansible.txt   # те же версии, что в GitHub Actions
     - cd ansible && ansible-lint                # профиль production, настройки — в ansible/.ansible-lint
