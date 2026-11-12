@@ -66,6 +66,9 @@ const MONTHS = ['январь', 'февраль', 'март', 'апрель', '�
 
 const map = L.map('map', { preferCanvas: true, zoomControl: false }).setView([55.0, 60.0], 7);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
+// Подпись Leaflet — ссылка без значка, который библиотека добавляет к ней начиная с версии 1.8
+map.attributionControl.setPrefix(
+    '<a href="https://leafletjs.com" title="A JavaScript library for interactive maps">Leaflet</a>');
 
 const osmAttribution = '&copy; <a href="https://www.openstreetmap.org/copyright">участники OpenStreetMap</a>';
 const baseLayers = {
