@@ -1,13 +1,14 @@
 ---
 # Настройка сервера и деплой сайта. Запуск с управляющей машины:
-#   cd ansible && ansible-playbook playbook.yml
-# Роли (base, docker, app, proxy, monitoring) добавляются по одной; пока плейбук только проверяет,
-# что сервер — тот, под который они пишутся.
-- name: Проверка сервера перед настройкой
+#   cd ansible && ansible-playbook playbook.yml -K
+# -K спрашивает пароль sudo: роли меняют систему. Посмотреть изменения, ничего не применяя:
+#   ansible-playbook playbook.yml -K --check --diff
+# Роли добавляются по одной: base → docker → app → proxy → monitoring.
+- name: Настройка сервера
   hosts: all
   gather_facts: true
-  become: false
-  tasks:
+  become: true
+  pre_tasks:
     - name: Сервер — Debian 13 на x86_64
       ansible.builtin.assert:
         that:
@@ -21,3 +22,5 @@
         success_msg: >-
           {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}
           ({{ ansible_facts['architecture'] }}), ядро {{ ansible_facts['kernel'] }}
+  roles:
+    - role: base

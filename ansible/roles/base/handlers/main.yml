@@ -1,0 +1,12 @@
+---
+# Обработчики запускаются в конце прогона и только если задача что-то изменила
+
+- name: Перечитать настройки sshd
+  ansible.builtin.systemd_service:
+    name: ssh
+    state: reloaded   # reload, а не restart: открытые сессии (в том числе сам Ansible) не рвутся
+
+- name: Перезапустить systemd-logind
+  ansible.builtin.systemd_service:
+    name: systemd-logind
+    state: restarted

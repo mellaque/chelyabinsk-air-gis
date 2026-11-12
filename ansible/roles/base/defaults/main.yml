@@ -1,0 +1,20 @@
+---
+# Часовой пояс сервера (имя из /usr/share/zoneinfo). Челябинская область живёт по екатеринбургскому времени
+base_timezone: Asia/Yekaterinburg
+
+# Пакеты, которые должны стоять на сервере
+base_packages:
+  - ca-certificates
+  - curl
+  - dnsutils
+  - git
+  - htop
+  - tmux
+  - unattended-upgrades
+
+# Юниты сна. Сервер — ноутбук: уснуть он не должен ни от клавиши, ни от команды
+base_sleep_targets:
+  - sleep.target
+  - suspend.target
+  - hibernate.target
+  - hybrid-sleep.target
