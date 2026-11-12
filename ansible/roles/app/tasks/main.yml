@@ -1,0 +1,88 @@
+---
+# Деплой сайта: проверить подпись образа → описать сервис в compose.yaml → запустить и дождаться healthy.
+# Docker управляется командами CLI, а не модулями community.docker: вызовов всего два, и ради них
+# не нужна дополнительная коллекция ни на управляющей машине, ни в CI.
+
+- name: Версия образа задана как digest
+  ansible.builtin.assert:
+    that:
+      - app_image_digest is defined
+      - app_image_digest is match('^sha256:[0-9a-f]{64}$')
+    fail_msg: "app_image_digest должен иметь вид sha256:<64 шестнадцатеричных символа> (group_vars/all.yml)"
+    quiet: true
+
+- name: Установлен cosign
+  ansible.builtin.get_url:
+    url: "https://github.com/sigstore/cosign/releases/download/{{ app_cosign_version }}/cosign-linux-amd64"
+    dest: /usr/local/bin/cosign
+    checksum: "{{ app_cosign_checksum }}"
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Есть ли cosign на сервере
+  ansible.builtin.stat:
+    path: /usr/local/bin/cosign
+  register: app_cosign_binary
+
+# Проверка выполняется при каждом прогоне и до любых изменений: если подпись не сходится,
+# прогон останавливается здесь, и на сервере продолжает работать прежняя версия.
+# root не нужен — задача идёт от обычного пользователя.
+- name: Подпись образа проверена
+  ansible.builtin.command:
+    argv:
+      - /usr/local/bin/cosign
+      - verify
+      - "{{ app_image }}@{{ app_image_digest }}"
+      - --certificate-identity-regexp
+      - "{{ app_cosign_identity_regexp }}"
+      - --certificate-oidc-issuer
+      - "{{ app_cosign_oidc_issuer }}"
+  become: false
+  changed_when: false
+  check_mode: false   # только читает — выполняется и при --check
+  # Единственный случай пропуска: --check на чистом сервере, где cosign ещё не установлен
+  when: app_cosign_binary.stat.exists or not ansible_check_mode
+
+- name: Каталог приложения
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Описание сервиса — compose.yaml
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ app_dir }}/compose.yaml"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: docker compose -f %s config --quiet
+  register: app_compose
+
+- name: Работает ли контейнер
+  ansible.builtin.command:
+    argv: [docker, compose, -f, "{{ app_dir }}/compose.yaml", ps, --status, running, --quiet]
+  register: app_running
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+# Запуск нужен в двух случаях: изменилось описание (например, digest) или контейнер не работает.
+# --wait ждёт состояния healthy: если новая версия не поднялась, прогон завершится ошибкой.
+- name: Сайт запущен и отвечает на healthcheck
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ app_dir }}/compose.yaml"
+      - up
+      - --detach
+      - --wait
+      - --wait-timeout
+      - "{{ app_wait_timeout }}"
+  changed_when: true
+  when: app_compose is changed or (app_running.stdout | default('') | trim) == ''

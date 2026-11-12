@@ -1,0 +1,19 @@
+# Сайт на сервере. Файл создаёт Ansible (роль app) — правки вручную будут перезаписаны.
+# Ограничения те же, что в compose.yaml репозитория; отличия: готовый образ по digest вместо
+# сборки, лимиты ресурсов и ни одного опубликованного порта — вход только через обратный прокси.
+name: air-gis
+
+services:
+  web:
+    image: {{ app_image }}@{{ app_image_digest }}
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: {{ app_memory_limit }}
+    cpus: "{{ app_cpus }}"
+    pids_limit: {{ app_pids_limit }}
