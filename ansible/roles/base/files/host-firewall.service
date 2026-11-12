@@ -1,0 +1,23 @@
+# Загружает таблицу nftables «inet host_firewall» из /etc/host-firewall.nft.
+# Свой юнит, а не nftables.service: тот при остановке и перезапуске выполняет «nft flush ruleset»
+# и стирает заодно правила Docker и Tailscale. Этот убирает только свою таблицу.
+[Unit]
+Description=Host firewall (nftables table inet host_firewall)
+Documentation=man:nft(8)
+DefaultDependencies=no
+Wants=network-pre.target
+Before=network-pre.target shutdown.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+StandardInput=null
+ProtectSystem=full
+ProtectHome=true
+ExecStart=/usr/sbin/nft -f /etc/host-firewall.nft
+ExecReload=/usr/sbin/nft -f /etc/host-firewall.nft
+ExecStop=/usr/sbin/nft delete table inet host_firewall
+
+[Install]
+WantedBy=sysinit.target

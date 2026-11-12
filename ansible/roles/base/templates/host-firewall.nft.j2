@@ -1,0 +1,37 @@
+#!/usr/sbin/nft -f
+# Firewall хоста. Файл создаёт Ansible (роль base) — правки вручную будут перезаписаны.
+#
+# Отдельная таблица, а не общий /etc/nftables.conf: тот начинается с «flush ruleset» и стёр бы
+# правила, которые Docker и Tailscale держат в своих таблицах. Здесь очищается только своя таблица.
+# Три строки ниже — «создать, если нет → удалить → описать заново»; файл применяется одной
+# транзакцией, поэтому момента без правил не бывает.
+#
+# Таблица фильтрует трафик к самому хосту (input). Опубликованные порты контейнеров идут через
+# forward (Docker делает DNAT до маршрутизации) и этой цепочкой не проверяются.
+table inet host_firewall
+delete table inet host_firewall
+
+table inet host_firewall {
+	chain input {
+		type filter hook input priority filter; policy drop;
+
+		iifname "lo" accept
+		ct state established,related accept
+		ct state invalid drop
+
+		# ICMP: ping и служебные сообщения; для IPv6 без них не работает обнаружение соседей
+		meta l4proto { icmp, ipv6-icmp } accept
+
+		# Tailscale: UDP-порт WireGuard и всё, что пришло уже из туннеля (доступ задаётся ACL tailnet)
+		udp dport {{ base_firewall_tailscale_port }} accept
+		iifname "tailscale0" accept
+
+		# SSH из локальной сети
+{% for source in base_firewall_ssh_sources %}
+		ip saddr {{ source }} tcp dport 22 accept
+{% endfor %}
+
+		# Всё остальное отбрасывается политикой цепочки; правило только считает пакеты
+		counter comment "dropped"
+	}
+}

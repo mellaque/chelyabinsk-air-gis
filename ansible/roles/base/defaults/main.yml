@@ -18,3 +18,14 @@ base_sleep_targets:
   - suspend.target
   - hibernate.target
   - hybrid-sleep.target
+
+# Firewall. Откуда разрешён SSH: по умолчанию — подсеть основного интерфейса (локальная сеть),
+# она берётся из фактов, поэтому адресов в репозитории нет. Из tailnet SSH разрешён всегда.
+base_firewall_ssh_sources:
+  - "{{ ansible_facts['default_ipv4']['network'] }}/{{ ansible_facts['default_ipv4']['prefix'] }}"
+
+# UDP-порт Tailscale (WireGuard)
+base_firewall_tailscale_port: 41641
+
+# Через сколько секунд firewall отключится сам, если после применения правил не удалось подключиться по SSH
+base_firewall_rollback_seconds: 180
