@@ -25,3 +25,4 @@
   roles:
     - role: base
     - role: docker
+    - role: app
