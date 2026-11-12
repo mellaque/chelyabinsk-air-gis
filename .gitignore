@@ -30,3 +30,8 @@ Thumbs.db
 
 # Пакеты npm: нужные файлы копируются в vendor/ (scripts/vendor_frontend.py)
 node_modules/
+
+# Ansible: служебный каталог ansible-lint и файл с секретами (настоящий хранится вне клона,
+# см. ansible/vault.example.yml; правило — страховка на случай, если его скопируют сюда)
+.ansible/
+ansible/**/vault.yml

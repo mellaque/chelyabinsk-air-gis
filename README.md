@@ -155,6 +155,7 @@ python scripts/validate_data.py
 | Проверка | Что делает |
 |---|---|
 | **Линтеры** | actionlint и [zizmor](https://docs.zizmor.sh/) проверяют workflow GitHub Actions (синтаксис, выражения, безопасность, известные уязвимости в actions), shellcheck — shell-скрипты; версии — в `requirements-lint.txt` |
+| **Ansible** | ansible-lint (профиль production) проверяет каталог `ansible/`: плейбук, роли, инвентарь; отдельный шаг следит, чтобы в репозиторий не попали файлы ansible-vault; версии — в `requirements-ansible.txt` |
 | **Ruff** | стиль кода и типичные ошибки в Python |
 | **pytest** (Python 3.12 и 3.14) | тесты обработки NetCDF → JSON и проверки данных на синтетических файлах; тесты загрузчика на локальном «фальшивом NASA» (каталог, авторизация, редирект без утечки токена, докачка, повторы); тесты синхронизации зеркал на локальных git-репозиториях |
 | **Проверка данных** | `scripts/validate_data.py`: все `data/*.json` в актуальном формате, размерности совпадают, нет NaN и отрицательных значений, у проверенных данных указан источник, в `region.geojson` нет битой кодировки |
@@ -192,6 +193,7 @@ ruff check .
 pytest
 python scripts/validate_data.py
 actionlint && zizmor --offline . && shellcheck scripts/*.sh
+pip install -r requirements-ansible.txt && (cd ansible && ansible-lint)
 ```
 
 На зеркале GitLab те же проверки описаны в [`.gitlab-ci.yml`](.gitlab-ci.yml) средствами GitLab:
@@ -284,10 +286,15 @@ GitHub показывает их как Verified, а GitLab и GitVerse — ка
 │   ├── vendor_frontend.py      # библиотеки фронтенда: node_modules → vendor/
 │   ├── prepare_region.py       # подготовка границ из выгрузки OSM
 │   └── legacy/                 # скрипты версии ВКР
+├── ansible/                    # настройка сервера и деплой (Ansible)
+│   ├── ansible.cfg             # настройки: инвентарь, формат вывода
+│   ├── inventory/hosts.yml     # сервер — только SSH-алиас, без адресов и логинов
+│   ├── playbook.yml            # плейбук
+│   └── vault.example.yml       # образец файла с секретами (настоящий — вне репозитория)
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных
 ├── SECURITY.md                 # как сообщить об уязвимости, меры безопасности, проверка подписи
-├── requirements*.txt           # версии Python-пакетов: пайплайн, разработка, линтеры
+├── requirements*.txt           # версии Python-пакетов: пайплайн, разработка, линтеры, Ansible
 ├── .gitlab-ci.yml              # CI для зеркала на GitLab
 ├── .github/
 │   ├── workflows/ci.yml        # CI/CD: проверки, публикация образов и сайта

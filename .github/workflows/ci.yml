@@ -1,5 +1,5 @@
 # CI/CD проекта.
-#   Pull request      → проверки (lint, python, data, frontend, docker). Красный PR не мержим.
+#   Pull request      → проверки (lint, ansible, python, data, frontend, docker). Красный PR не мержим.
 #   Push в main       → те же проверки, затем публикация образов в GHCR и сайта на GitHub Pages.
 #   Тег vX.Y.Z        → проверки и образы с номером версии (например, :2.0.0 и :2.0).
 name: CI
@@ -47,6 +47,37 @@ jobs:
 
       - name: shellcheck — скрипты
         run: shellcheck scripts/*.sh
+
+  ansible:
+    name: Ansible — ansible-lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false   # git-токен после checkout не нужен — не оставляем его на диске
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Установка Ansible (версии — в requirements-ansible.txt)
+        run: pip install -r requirements-ansible.txt
+
+      # Из каталога ansible/: там ansible.cfg и .ansible-lint. Синтаксис плейбука проверяется заодно
+      - name: ansible-lint — плейбук, роли и инвентарь (профиль production)
+        working-directory: ansible
+        run: ansible-lint
+
+      # Секреты хранятся вне репозитория (ansible/vault.example.yml). Файл или значение, зашифрованные
+      # ansible-vault, начинаются с заголовка $ANSIBLE_VAULT — в репозитории таких быть не должно
+      - name: В репозитории нет файлов ansible-vault
+        run: |
+          # shellcheck disable=SC2016  # $ здесь — символ из заголовка, а не переменная
+          if found=$(git grep -lE '^[[:space:]]*\$ANSIBLE_VAULT;[0-9]'); then
+            echo "::error::Зашифрованные секреты в репозитории: $found"
+            exit 1
+          fi
 
   python:
     name: Python ${{ matrix.python-version }} — ruff и тесты

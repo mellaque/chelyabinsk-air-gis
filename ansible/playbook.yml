@@ -1,0 +1,23 @@
+---
+# Настройка сервера и деплой сайта. Запуск с управляющей машины:
+#   cd ansible && ansible-playbook playbook.yml
+# Роли (base, docker, app, proxy, monitoring) добавляются по одной; пока плейбук только проверяет,
+# что сервер — тот, под который они пишутся.
+- name: Проверка сервера перед настройкой
+  hosts: all
+  gather_facts: true
+  become: false
+  tasks:
+    - name: Сервер — Debian 13 на x86_64
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['distribution'] == 'Debian'
+          - ansible_facts['distribution_major_version'] == '13'
+          - ansible_facts['architecture'] == 'x86_64'
+        fail_msg: >-
+          Роли рассчитаны на Debian 13 (x86_64), а здесь {{ ansible_facts['distribution'] }}
+          {{ ansible_facts['distribution_version'] }} ({{ ansible_facts['architecture'] }}).
+          Образы в GHCR публикуются только для linux/amd64.
+        success_msg: >-
+          {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}
+          ({{ ansible_facts['architecture'] }}), ядро {{ ansible_facts['kernel'] }}

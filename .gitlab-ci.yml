@@ -65,6 +65,13 @@ linters:
     - actionlint
     - zizmor --offline .
 
+ansible-lint:
+  stage: lint
+  image: $PYTHON_IMAGE
+  script:
+    - pip install -r requirements-ansible.txt   # те же версии, что в GitHub Actions
+    - cd ansible && ansible-lint                # профиль production, настройки — в ansible/.ansible-lint
+
 frontend:
   stage: lint
   image: node:22-alpine

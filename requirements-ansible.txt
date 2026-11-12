@@ -1,0 +1,4 @@
+# Ansible для CI: ansible-lint проверяет каталог ansible/. Версии зафиксированы, обновления раз в месяц
+# предлагает Dependabot. Отдельный файл — чтобы не ставить Ansible в job, которым он не нужен.
+ansible-core==2.21.6
+ansible-lint==26.10.1
