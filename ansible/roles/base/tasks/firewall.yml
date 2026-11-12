@@ -1,0 +1,77 @@
+---
+# Firewall хоста: своя таблица nftables и свой юнит systemd (почему — в комментариях к файлам).
+# Ошибка в правилах может закрыть SSH, поэтому новые правила применяются с автооткатом:
+# до применения заводится таймер, который остановит firewall; таймер снимается, только если
+# после применения удалось заново подключиться по SSH.
+
+- name: Firewall — правила
+  ansible.builtin.template:
+    src: host-firewall.nft.j2
+    dest: /etc/host-firewall.nft
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/nft -c -f %s   # -c: только проверить синтаксис, ничего не применяя
+  register: base_firewall_rules
+
+- name: Firewall — юнит systemd
+  ansible.builtin.copy:
+    src: host-firewall.service
+    dest: /etc/systemd/system/host-firewall.service
+    owner: root
+    group: root
+    mode: "0644"
+  register: base_firewall_unit
+
+- name: Firewall — включён при загрузке
+  ansible.builtin.systemd_service:
+    name: host-firewall
+    enabled: true
+    daemon_reload: "{{ base_firewall_unit is changed }}"
+  # При --check на чистом сервере юнита ещё нет (предыдущая задача его не создала) — это не ошибка
+  ignore_errors: "{{ ansible_check_mode }}"
+
+# Проверяется не состояние юнита, а сама таблица: после автоотката или ручного удаления её нет
+- name: Firewall — загружена ли таблица
+  ansible.builtin.command:
+    cmd: /usr/sbin/nft list table inet host_firewall
+  register: base_firewall_table
+  changed_when: false
+  failed_when: false
+  check_mode: false   # команда только читает — выполняется и при --check
+
+- name: Firewall — применение с автооткатом
+  when: base_firewall_rules is changed or base_firewall_unit is changed or base_firewall_table.rc != 0
+  block:
+    - name: Firewall — таймер автоотката
+      ansible.builtin.command:
+        cmd: >-
+          systemd-run --collect --unit=host-firewall-rollback
+          --on-active={{ base_firewall_rollback_seconds }}
+          /usr/bin/systemctl stop host-firewall
+      changed_when: true
+
+    - name: Firewall — применить правила
+      ansible.builtin.systemd_service:
+        name: host-firewall
+        state: reloaded   # не запущен — запустит; запущен — перечитает файл одной транзакцией
+      ignore_errors: "{{ ansible_check_mode }}"
+
+# Уже открытое SSH-соединение работает при любых правилах (established), поэтому проверка должна
+# открыть новое. reset_connection закрывает текущее; условий эта команда не поддерживает и
+# выполняется при каждом прогоне — это безвредно.
+- name: Firewall — закрыть текущее SSH-соединение
+  ansible.builtin.meta: reset_connection
+
+- name: Firewall — новое SSH-соединение проходит
+  ansible.builtin.wait_for_connection:
+    timeout: 30
+  when: base_firewall_rules is changed or base_firewall_unit is changed or base_firewall_table.rc != 0
+
+- name: Firewall — снять таймер автоотката
+  ansible.builtin.systemd_service:
+    name: host-firewall-rollback.timer
+    state: stopped
+  when:
+    - base_firewall_rules is changed or base_firewall_unit is changed or base_firewall_table.rc != 0
+    - not ansible_check_mode

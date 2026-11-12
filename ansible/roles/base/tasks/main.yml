@@ -58,3 +58,6 @@
     name: "{{ item }}"
     masked: true
   loop: "{{ base_sleep_targets }}"
+
+- name: Firewall хоста
+  ansible.builtin.import_tasks: firewall.yml
