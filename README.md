@@ -291,6 +291,7 @@ GitHub показывает их как Verified, а GitLab и GitVerse — ка
 │   ├── inventory/hosts.yml     # сервер — только SSH-алиас, без адресов и логинов
 │   ├── playbook.yml            # плейбук
 │   ├── roles/base/             # роль: пакеты, SSH только по ключу, автообновления, часовой пояс, запрет сна, firewall
+│   ├── roles/docker/           # роль: Docker CE и Compose из репозитория Docker, ротация журналов контейнеров
 │   └── vault.example.yml       # образец файла с секретами (настоящий — вне репозитория)
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных
