@@ -1,0 +1,18 @@
+---
+# Источник данных Grafana. Файл из репозитория (роль monitoring) — в интерфейсе его изменить нельзя.
+apiVersion: 1
+
+# Источники, которых в этом файле больше нет, удаляются
+prune: true
+
+datasources:
+  - name: Prometheus
+    uid: prometheus          # постоянный идентификатор: на него ссылаются дашборды
+    type: prometheus
+    access: proxy            # запросы делает сервер Grafana, а не браузер
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      timeInterval: 30s      # интервал сбора метрик — от него Grafana считает окно для rate()
+      httpMethod: POST

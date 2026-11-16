@@ -1,4 +1,4 @@
 ---
-# Сколько сервисов описано в templates/compose.yaml.j2: prometheus, node-exporter, cadvisor, blackbox.
-# Не настройка, а свойство шаблона — поэтому в vars, а не в defaults.
-monitoring_services: 4
+# Сколько сервисов описано в templates/compose.yaml.j2: prometheus, node-exporter, cadvisor, blackbox,
+# grafana. Не настройка, а свойство шаблона — поэтому в vars, а не в defaults.
+monitoring_services: 5
