@@ -5,6 +5,18 @@
 	local_certs
 	# Корневой сертификат ставится в доверенные на устройствах, а не внутри контейнера
 	skip_install_trust
+	# Метрики HTTP-запросов с разбивкой по сайтам (без этой опции Caddy их не считает)
+	metrics {
+		per_host
+	}
+}
+
+# Метрики для Prometheus. Порт на хосте не опубликован; отвечаем только сети мониторинга
+http://:{{ proxy_metrics_port }} {
+	@outside not remote_ip {{ proxy_metrics_sources | join(' ') }}
+	respond @outside "Forbidden" 403
+
+	metrics
 }
 {% for site in proxy_sites %}
 

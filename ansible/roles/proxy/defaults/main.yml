@@ -37,6 +37,13 @@ proxy_sites:
     upstream: prometheus:9090
     allowed_sources: "{{ proxy_tailnet_sources }}"
 
+# Метрики Caddy для Prometheus (число и длительность запросов по сайтам, состояние upstream).
+# Отдаются по HTTP на отдельном порту, который на хосте не публикуется: он виден только из сетей
+# Docker, а отвечает только адресам из proxy_metrics_sources — сети мониторинга (group_vars/all.yml).
+proxy_metrics_port: 9180
+proxy_metrics_sources:
+  - "{{ monitoring_subnet }}"
+
 proxy_memory_limit: 128m
 proxy_cpus: "0.50"
 proxy_pids_limit: 128

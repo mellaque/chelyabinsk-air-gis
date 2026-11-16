@@ -59,6 +59,40 @@ services:
     cpus: "{{ monitoring_exporter_cpus }}"
     pids_limit: {{ monitoring_pids_limit }}
 
+  # Метрики контейнеров. Работает без --privileged и без capabilities — проверено на этом сервере:
+  # не работает только счётчик OOM (ему нужен /dev/kmsg).
+  # Компромисс: cAdvisor нужен сокет Docker (внутри /var/run) — по нему он узнаёт имена контейнеров.
+  # Монтирование «только чтение» API не ограничивает: доступ к сокету равен правам root на сервере.
+  # Поэтому у контейнера нет опубликованных портов, а метрики он отдаёт только в сеть monitoring.
+  cadvisor:
+    image: {{ monitoring_cadvisor_image }}
+    restart: unless-stopped
+    command:
+      - --docker_only=true        # только контейнеры Docker и сервер целиком, без остальных cgroup
+      - --housekeeping_interval={{ monitoring_cadvisor_interval }}
+      - --allow_dynamic_housekeeping=false
+      - --enable_metrics={{ monitoring_cadvisor_metrics | join(',') }}
+      - --store_container_labels=false
+      - --whitelisted_container_labels={{ monitoring_cadvisor_labels | join(',') }}
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    networks:
+      - monitoring
+    healthcheck:
+      disable: true               # как у остальных экспортёров: состояние показывает метрика up
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: {{ monitoring_cadvisor_memory_limit }}
+    cpus: "{{ monitoring_exporter_cpus }}"
+    pids_limit: {{ monitoring_pids_limit }}
+
   blackbox:
     image: {{ monitoring_blackbox_image }}
     restart: unless-stopped
