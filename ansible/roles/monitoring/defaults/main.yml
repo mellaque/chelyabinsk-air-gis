@@ -7,6 +7,7 @@ monitoring_blackbox_image: prom/blackbox-exporter:v0.29.1@sha256:ea1c7aa3ef3f307
 # cAdvisor: с версии 0.53 образы публикуются в GHCR (в gcr.io остались только старые)
 monitoring_cadvisor_image: ghcr.io/google/cadvisor:v0.60.6@sha256:b8e7d1093144fd088f425ff003d75a4aa405de075db78dae3bc563730b1bd07a
 monitoring_grafana_image: grafana/grafana:13.3.1@sha256:0615ec4fbd4072004b7d86b46ded63013a74b7d6eb1119273dd89e8fa25c13cf
+monitoring_alertmanager_image: prom/alertmanager:v0.35.0@sha256:e638797febd034838eca8b98cdbd46f951e9bf7f178777aa8669167406a9946c
 
 # Каталог с compose.yaml и конфигурацией на сервере
 monitoring_dir: /opt/monitoring
@@ -83,3 +84,45 @@ monitoring_pids_limit: 128
 
 # Сколько секунд ждать запуска контейнеров и первого опроса всех целей
 monitoring_wait_timeout: 120
+
+# Alertmanager: получает алерты от Prometheus, группирует их и отправляет уведомления в ntfy.
+# Адрес через обратный прокси (сайт описан в роли proxy) — там видны активные алерты и ставятся
+# «заглушки» (silences) на время работ.
+monitoring_alertmanager_url: https://alertmanager.home.arpa/
+# Пользователь, от которого Alertmanager работает в образе (nobody): ему должен быть доступен файл с адресом канала
+monitoring_alertmanager_uid: "65534"
+monitoring_alertmanager_memory_limit: 128m
+
+# Алерты с одинаковыми именем и важностью приходят одним уведомлением (например, SiteDown для
+# главной страницы и /healthz).
+#   group_wait      — сколько ждать после первого алерта группы, не появятся ли ещё;
+#   group_interval  — как часто сообщать об изменениях в группе (в том числе об исправлении);
+#   repeat_interval — через сколько напомнить, если ничего не изменилось.
+monitoring_alert_group_wait: 10s
+monitoring_alert_group_interval: 1m
+monitoring_alert_repeat_interval: 12h
+monitoring_alert_repeat_interval_critical: 4h
+
+# Канал ntfy — из файла с секретами вне репозитория (vault.example.yml): имя канала и есть пароль
+# к нему. Значения по умолчанию нет.
+monitoring_ntfy_topic_url: "{{ vault_ntfy_topic_url }}"
+
+# Как выглядит уведомление. Alertmanager отправляет в ntfy свой обычный JSON (webhook), а заголовок,
+# текст и приоритет из него собирает сам сервер ntfy по этим шаблонам — они передаются в адресе.
+# Это шаблоны Go, а не Jinja: метка !unsafe запрещает Ansible их вычислять. «\n» — перевод строки.
+# Поля: .status (firing или resolved — у группы и у каждого алерта), .alerts, .commonLabels,
+# .commonAnnotations (метки и аннотации, одинаковые у всех алертов группы).
+monitoring_ntfy_title: !unsafe >-
+  {{if eq .status "resolved"}}✅ Исправлено: {{else if eq .commonLabels.severity "critical"}}🚨 {{else if
+  eq .commonLabels.severity "info"}}ℹ️ {{else}}⚠️ {{end}}{{.commonLabels.alertname}}
+# Сначала — краткая строка каждого алерта (исправленные отмечены), затем описание: общее, если оно
+# у всех одинаковое, иначе — каждого
+monitoring_ntfy_message: !unsafe >-
+  {{range .alerts}}{{if eq .status "resolved"}}✅ {{end}}{{.annotations.summary}}\n{{end}}{{if
+  eq .status "firing"}}{{if .commonAnnotations.description}}{{.commonAnnotations.description}}{{else}}{{range
+  .alerts}}{{.annotations.description}}\n{{end}}{{end}}{{end}}
+# Приоритет ntfy: critical — высокий (но не высший: он пробивает «Не беспокоить»), info — низкий,
+# остальное и сообщения об исправлении — обычный
+monitoring_ntfy_priority: !unsafe >-
+  {{if eq .status "resolved"}}default{{else if eq .commonLabels.severity "critical"}}high{{else if
+  eq .commonLabels.severity "info"}}low{{else}}default{{end}}

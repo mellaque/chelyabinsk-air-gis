@@ -25,6 +25,25 @@ groups:
           summary: "Prometheus не смог перечитать конфигурацию"
           description: "Работает прежняя конфигурация. Смотреть: docker compose -f /opt/monitoring/compose.yaml logs prometheus."
 
+      # Если уведомления не уходят, сообщить об этом тем же путём нельзя — алерт виден только в
+      # интерфейсе Prometheus и Alertmanager.
+      - alert: AlertmanagerNotificationsFailing
+        expr: increase(alertmanager_notifications_failed_total[10m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alertmanager не может отправить уведомления ({{ $labels.integration }})"
+          description: "Смотреть: docker logs monitoring-alertmanager-1, доступность ntfy.sh с сервера."
+
+      - alert: AlertmanagerConfigReloadFailed
+        expr: alertmanager_config_last_reload_successful == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Alertmanager не смог перечитать конфигурацию"
+          description: "Работает прежняя конфигурация. Смотреть: docker logs monitoring-alertmanager-1."
+
       # Правило с ошибкой при вычислении (например, деление «многие ко многим») не срабатывает никогда
       - alert: PrometheusRuleEvaluationFailing
         expr: increase(prometheus_rule_evaluation_failures_total[10m]) > 0

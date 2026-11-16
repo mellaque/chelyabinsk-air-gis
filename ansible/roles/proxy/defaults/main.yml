@@ -22,7 +22,7 @@ proxy_tailnet_sources:
 
 # Сайты: имя → контейнер в общей сети. Домен home.arpa зарезервирован для домашних сетей (RFC 8375).
 # allowed_sources — с каких адресов сайт доступен; остальным прокси отвечает 403.
-# У Prometheus нет своей авторизации, поэтому он открыт только устройствам tailnet.
+# У Prometheus и Alertmanager нет своей авторизации, поэтому они открыты только устройствам tailnet.
 #
 # Условие для allowed_sources с адресами tailnet: Tailscale на сервере не должен подменять адрес
 # источника. По умолчанию он делает это для всех пакетов, пересылаемых с tailscale0 (в том числе
@@ -35,6 +35,9 @@ proxy_sites:
     upstream: air-gis:8080
   - host: prometheus.home.arpa
     upstream: prometheus:9090
+    allowed_sources: "{{ proxy_tailnet_sources }}"
+  - host: alertmanager.home.arpa
+    upstream: alertmanager:9093
     allowed_sources: "{{ proxy_tailnet_sources }}"
   - host: grafana.home.arpa
     upstream: grafana:3000

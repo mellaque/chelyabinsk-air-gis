@@ -1,5 +1,6 @@
 # Мониторинг. Файл создаёт Ansible (роль monitoring) — правки вручную будут перезаписаны.
-# Ни одного опубликованного порта: Prometheus открывается через обратный прокси (сеть monitoring).
+# Ни одного опубликованного порта: Prometheus, Alertmanager и Grafana открываются через обратный прокси
+# (сеть monitoring).
 name: monitoring
 
 services:
@@ -34,6 +35,33 @@ services:
       - no-new-privileges:true
     mem_limit: {{ monitoring_prometheus_memory_limit }}
     cpus: "{{ monitoring_prometheus_cpus }}"
+    pids_limit: {{ monitoring_pids_limit }}
+
+  alertmanager:
+    image: {{ monitoring_alertmanager_image }}
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+      - --web.external-url={{ monitoring_alertmanager_url }}
+      # Пустой адрес выключает режим кластера: экземпляр один, порт 9094 для обмена между узлами не нужен
+      - --cluster.listen-address=
+    volumes:
+      - ./alertmanager:/etc/alertmanager:ro
+      # Каталог, а не файл (и не secrets: compose): адрес канала Alertmanager читает при каждой
+      # отправке, а примонтированный отдельно файл после замены остался бы прежним
+      - ./secrets/alertmanager:/run/secrets:ro
+      # Заглушки и журнал отправленных уведомлений: без тома после перезапуска всё пришло бы повторно
+      - alertmanager_data:/alertmanager
+    networks:
+      - monitoring
+    read_only: true               # пишет только в том с данными
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: {{ monitoring_alertmanager_memory_limit }}
+    cpus: "{{ monitoring_exporter_cpus }}"
     pids_limit: {{ monitoring_pids_limit }}
 
   # У экспортёров нет healthcheck: работают ли они, показывает метрика up в Prometheus,
@@ -159,6 +187,7 @@ secrets:
 
 volumes:
   prometheus_data:
+  alertmanager_data:
   grafana_data:
 
 networks:

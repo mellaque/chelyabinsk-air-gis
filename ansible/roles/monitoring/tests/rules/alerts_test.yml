@@ -124,6 +124,30 @@ tests:
               summary: "Prometheus не может опросить cadvisor (cadvisor:8080)"
               description: "Метрики не собираются 2 минуты. Смотреть: docker ps -a на сервере и журнал контейнера."
 
+  - name: Alertmanager не смог отправить уведомление — алерт сразу; счётчик стоит — алерта нет
+    interval: 30s
+    input_series:
+      - series: 'alertmanager_notifications_failed_total{job="alertmanager", instance="alertmanager:9093", integration="webhook", reason="other"}'
+        values: "0x10 1x30"
+      - series: 'alertmanager_notifications_failed_total{job="alertmanager", instance="alertmanager:9093", integration="email", reason="other"}'
+        values: "0x40"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: AlertmanagerNotificationsFailing
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: AlertmanagerNotificationsFailing
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: alertmanager
+              instance: alertmanager:9093
+              integration: webhook
+              reason: other
+            exp_annotations:
+              summary: "Alertmanager не может отправить уведомления (webhook)"
+              description: "Смотреть: docker logs monitoring-alertmanager-1, доступность ntfy.sh с сервера."
+
   # --- Сервер -------------------------------------------------------------------------------------
   - name: Место на диске — 10 % свободно это warning, 3 % — ещё и critical; /boot с 78 % в норме
     interval: 1m
