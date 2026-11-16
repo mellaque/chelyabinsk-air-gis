@@ -36,6 +36,9 @@ proxy_sites:
   - host: prometheus.home.arpa
     upstream: prometheus:9090
     allowed_sources: "{{ proxy_tailnet_sources }}"
+  - host: grafana.home.arpa
+    upstream: grafana:3000
+    allowed_sources: "{{ proxy_tailnet_sources }}"
 
 # Метрики Caddy для Prometheus (число и длительность запросов по сайтам, состояние upstream).
 # Отдаются по HTTP на отдельном порту, который на хосте не публикуется: он виден только из сетей

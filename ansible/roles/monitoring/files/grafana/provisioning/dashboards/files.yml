@@ -1,0 +1,12 @@
+---
+# Откуда Grafana берёт дашборды: только из файлов репозитория (роль monitoring).
+apiVersion: 1
+
+providers:
+  - name: files
+    type: file
+    disableDeletion: true    # удалить дашборд из интерфейса нельзя
+    allowUiUpdates: false    # и сохранить изменения тоже: правки — через репозиторий
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/dashboards

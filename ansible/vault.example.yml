@@ -2,13 +2,13 @@
 # Образец файла с секретами. Настоящий файл в репозитории не хранится — даже зашифрованный:
 # он лежит на управляющей машине вне клона, зашифрован ansible-vault и подключается при запуске.
 #
-#   mkdir -p ~/.config/air-gis
+#   mkdir -p ~/.config/air-gis && chmod 700 ~/.config/air-gis
 #   cp vault.example.yml ~/.config/air-gis/vault.yml
 #   ansible-vault encrypt ~/.config/air-gis/vault.yml
 #   ansible-vault edit ~/.config/air-gis/vault.yml
-#   ansible-playbook playbook.yml -e @~/.config/air-gis/vault.yml --ask-vault-pass
+#   ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault-pass
 #
-# Значения ниже — заглушки. Переменные понадобятся ролям мониторинга.
+# Значения ниже — заглушки: с ними роль monitoring не запустится.
 
 # Пароль администратора Grafana
 vault_grafana_admin_password: "заменить"

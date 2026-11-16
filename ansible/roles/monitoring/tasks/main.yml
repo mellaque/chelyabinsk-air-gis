@@ -1,7 +1,7 @@
 ---
 # Мониторинг: Prometheus собирает метрики, node_exporter отдаёт метрики хоста, cAdvisor — метрики
 # контейнеров, blackbox_exporter проверяет сайты запросами по HTTPS; свои метрики отдаёт и обратный
-# прокси. Веб-интерфейс Prometheus открывается через обратный прокси.
+# прокси. Grafana показывает всё это на дашбордах. Prometheus и Grafana открываются через обратный прокси.
 # Конфигурацию перед заменой проверяют сами программы из тех же образов (promtool, --config.check).
 
 - name: Сеть мониторинга описана
@@ -11,6 +11,18 @@
       - monitoring_gateway is defined
       - monitoring_node_exporter_port is defined
     fail_msg: "monitoring_subnet, monitoring_gateway и monitoring_node_exporter_port задаются в group_vars/all.yml"
+    quiet: true
+
+# Значение не выводится: при ошибке видно только, какое из условий не выполнено
+- name: Пароль администратора Grafana задан
+  ansible.builtin.assert:
+    that:
+      - vault_grafana_admin_password is defined
+      - vault_grafana_admin_password | length >= 12
+      - "'заменить' not in vault_grafana_admin_password"
+    fail_msg: >-
+      Нужен файл с секретами (образец — vault.example.yml) и пароль не короче 12 символов:
+      ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault-pass
     quiet: true
 
 - name: Каталоги конфигурации
@@ -23,6 +35,46 @@
   loop:
     - prometheus
     - blackbox
+    - grafana
+
+- name: Каталог секретов
+  ansible.builtin.file:
+    path: "{{ monitoring_dir }}/secrets"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+# Файл читает только пользователь, от которого Grafana работает в контейнере
+- name: Пароль администратора Grafana — файл для контейнера
+  ansible.builtin.copy:
+    content: "{{ monitoring_grafana_admin_password }}"
+    dest: "{{ monitoring_dir }}/secrets/grafana-admin-password"
+    owner: "{{ monitoring_grafana_uid }}"
+    group: root
+    mode: "0400"
+  no_log: true   # иначе пароль попал бы в вывод и в diff
+
+# Источник данных Grafana читает только при запуске — после изменения нужен перезапуск (ниже)
+- name: Grafana — источник данных и поставщик дашбордов
+  ansible.builtin.copy:
+    src: grafana/provisioning/
+    dest: "{{ monitoring_dir }}/grafana/provisioning/"
+    owner: root
+    group: root
+    mode: "0644"
+    directory_mode: "0755"
+  register: monitoring_grafana_provisioning
+
+# Файлы дашбордов Grafana перечитывает сама, перезапуск не нужен
+- name: Grafana — дашборды
+  ansible.builtin.copy:
+    src: grafana/dashboards/
+    dest: "{{ monitoring_dir }}/grafana/dashboards/"
+    owner: root
+    group: root
+    mode: "0644"
+    directory_mode: "0755"
 
 # Сайты за обратным прокси подписаны его собственным центром сертификации. Чтобы blackbox
 # проверял и сертификат, ему нужен корневой сертификат — только он, без ключей: том caddy_data
@@ -95,9 +147,9 @@
     validate: docker compose -f %s config --quiet
   register: monitoring_compose
 
-- name: Какие контейнеры работают
+- name: Какие сервисы работают
   ansible.builtin.command:
-    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", ps, --status, running, --quiet]
+    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", ps, --status, running, --services]
   register: monitoring_running
   changed_when: false
   failed_when: false
@@ -119,6 +171,16 @@
       - "{{ monitoring_wait_timeout }}"
   changed_when: true
   when: monitoring_compose is changed or (monitoring_running.stdout_lines | default([]) | length) < monitoring_services
+
+# Только если Grafana уже работала до этого прогона: только что созданная прочитает файлы сама,
+# а перезапуск во время первого запуска прервал бы создание её базы
+- name: Grafana перезапущена, если изменился источник данных
+  ansible.builtin.command:
+    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", restart, grafana]
+  changed_when: true
+  when:
+    - monitoring_grafana_provisioning is changed
+    - "'grafana' in (monitoring_running.stdout_lines | default([]))"
 
 # Конфигурация должна быть перечитана до проверки целей, а не в конце прогона
 - name: Конфигурация перечитана, если она изменилась
@@ -154,5 +216,5 @@
   # При --check на чистом сервере контейнеров ещё нет
   when: not ansible_check_mode or (monitoring_running.stdout_lines | default([]) | length) == monitoring_services
   vars:
-    # Prometheus, node_exporter, blackbox_exporter, cAdvisor, Caddy и по одной цели на каждую проверку
-    monitoring_targets_expected: "{{ 5 + (monitoring_probes_internal | length) + (monitoring_probes_public | length) }}"
+    # Prometheus, node_exporter, blackbox_exporter, cAdvisor, Caddy, Grafana и по одной цели на каждую проверку
+    monitoring_targets_expected: "{{ 6 + (monitoring_probes_internal | length) + (monitoring_probes_public | length) }}"

@@ -6,12 +6,28 @@ monitoring_node_exporter_image: prom/node-exporter:v1.12.1@sha256:1b4e4438faca4d
 monitoring_blackbox_image: prom/blackbox-exporter:v0.29.1@sha256:ea1c7aa3ef3f307cd03e85f34abb604478ccb90b567fc690da0cd9776da76b13
 # cAdvisor: с версии 0.53 образы публикуются в GHCR (в gcr.io остались только старые)
 monitoring_cadvisor_image: ghcr.io/google/cadvisor:v0.60.6@sha256:b8e7d1093144fd088f425ff003d75a4aa405de075db78dae3bc563730b1bd07a
+monitoring_grafana_image: grafana/grafana:13.3.1@sha256:0615ec4fbd4072004b7d86b46ded63013a74b7d6eb1119273dd89e8fa25c13cf
 
 # Каталог с compose.yaml и конфигурацией на сервере
 monitoring_dir: /opt/monitoring
 
 # Адрес, по которому Prometheus открывается через обратный прокси (сайт описан в роли proxy)
 monitoring_prometheus_url: https://prometheus.home.arpa/
+
+# Grafana: адрес через обратный прокси (сайт описан в роли proxy) и учётная запись администратора.
+# Пароль — из файла с секретами вне репозитория (vault.example.yml); значения по умолчанию у него нет.
+# Он задаётся только при первом запуске с пустым томом; сменить позже:
+#   docker compose -f /opt/monitoring/compose.yaml exec grafana grafana cli admin reset-admin-password <новый>
+monitoring_grafana_url: https://grafana.home.arpa/
+monitoring_grafana_admin_user: admin
+monitoring_grafana_admin_password: "{{ vault_grafana_admin_password }}"
+# Дашборд, который открывается на главной странице (файл из files/grafana/dashboards)
+monitoring_grafana_home_dashboard: site.json
+# Пользователь, от которого Grafana работает в образе: ему должен быть доступен файл с паролем
+monitoring_grafana_uid: "472"
+# Измерено на сервере: около 300 МБ сразу после запуска и до 350 МБ при открытых дашбордах
+monitoring_grafana_memory_limit: 512m
+monitoring_grafana_pids_limit: 256
 
 # Как часто собирать метрики. 30 с вместо привычных 15: вдвое меньше записи на диск,
 # а для домашнего сервера такой точности достаточно.
