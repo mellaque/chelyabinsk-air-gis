@@ -1,0 +1,55 @@
+---
+# Правила алертов: сайт. Проверки делает blackbox_exporter (job blackbox_http): запрос по HTTPS,
+# как из браузера. Файл копируется на сервер как есть: {{ … }} здесь — шаблоны Prometheus, не Ansible.
+#
+# Метка severity определяет, как уведомление будет доставлено:
+#   critical — сломано то, ради чего сервер существует, или вот-вот сломается;
+#   warning  — нужно посмотреть в ближайшие дни;
+#   info     — к сведению.
+groups:
+  - name: site
+    rules:
+      # Опрос — раз в 30 с, правила считаются тоже раз в 30 с. for: 30s — значит, условие верно
+      # два вычисления подряд, то есть неудачны две проверки подряд: одна случайная ошибка
+      # (или пересоздание контейнера при выкатке) алерт не вызывает, а от поломки до алерта
+      # проходит не больше полутора минут.
+      - alert: SiteDown
+        expr: probe_success{job="blackbox_http", module="http_internal"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Сайт не отвечает: {{ $labels.instance }}"
+          description: "Проверка по HTTPS через обратный прокси не проходит. Смотреть: контейнеры air-gis-web-1 и proxy-caddy-1, дашборд «Сайт»."
+
+      # Публичное демо — чужая площадка, и ответы оттуда иногда приходят медленно (бывало 9,5 с
+      # при таймауте 10 с). Поэтому ждём дольше, и важность ниже: починить её мы не можем.
+      - alert: PublicSiteDown
+        expr: probe_success{job="blackbox_http", module="http_public"} == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Публичное демо не отвечает: {{ $labels.instance }}"
+          description: "Проверка не проходит 5 минут подряд. Смотреть: статус GitHub Pages и последний запуск публикации в Actions."
+
+      # Сертификаты внутреннего центра сертификации Caddy живут 12 часов и обновляются сами, когда
+      # остаётся около трети срока. Меньше двух часов — значит, обновление не работает.
+      - alert: InternalCertNotRenewed
+        expr: (probe_ssl_earliest_cert_expiry{job="blackbox_http", module="http_internal"} - time()) / 3600 < 2
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Сертификат не обновляется: {{ $labels.instance }}"
+          description: "До конца срока {{ $value | printf \"%.1f\" }} ч, а Caddy должен был выпустить новый. Смотреть: docker logs proxy-caddy-1."
+
+      # У публичных сайтов сертификаты на месяцы — порог в днях
+      - alert: PublicCertExpiring
+        expr: (probe_ssl_earliest_cert_expiry{job="blackbox_http", module="http_public"} - time()) / 86400 < 7
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Сертификат скоро истечёт: {{ $labels.instance }}"
+          description: "До конца срока {{ $value | printf \"%.0f\" }} дн."

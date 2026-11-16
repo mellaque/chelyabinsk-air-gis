@@ -1,0 +1,36 @@
+---
+# Правила алертов: сам мониторинг. Файл копируется на сервер как есть: {{ … }} — шаблоны Prometheus.
+groups:
+  - name: monitoring
+    rules:
+      # up — метрика, которую Prometheus сам записывает для каждой цели: 1 — опрос удался, 0 — нет.
+      # Для проверок сайтов (job blackbox_http) up == 0 означает, что не отвечает сам blackbox_exporter:
+      # метрики probe_success тогда нет вовсе, и SiteDown молчит — поэтому этот алерт обязателен.
+      - alert: TargetDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus не может опросить {{ $labels.job }} ({{ $labels.instance }})"
+          description: "Метрики не собираются 2 минуты. Смотреть: docker ps -a на сервере и журнал контейнера."
+
+      # Конфигурация перечитывается по SIGHUP; при ошибке в файле Prometheus молча остаётся на прежней
+      - alert: PrometheusConfigReloadFailed
+        expr: prometheus_config_last_reload_successful == 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus не смог перечитать конфигурацию"
+          description: "Работает прежняя конфигурация. Смотреть: docker compose -f /opt/monitoring/compose.yaml logs prometheus."
+
+      # Правило с ошибкой при вычислении (например, деление «многие ко многим») не срабатывает никогда
+      - alert: PrometheusRuleEvaluationFailing
+        expr: increase(prometheus_rule_evaluation_failures_total[10m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Правила Prometheus вычисляются с ошибками: группа {{ $labels.rule_group }}"
+          description: "Часть алертов сейчас не работает. Смотреть: страница /rules в Prometheus."

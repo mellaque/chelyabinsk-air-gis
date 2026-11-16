@@ -1,0 +1,30 @@
+---
+# Правила алертов: контейнеры (метрики cAdvisor). Файл копируется на сервер как есть:
+# {{ … }} — шаблоны Prometheus. name!="" — только контейнеры Docker, без cgroup сервера целиком.
+groups:
+  - name: containers
+    rules:
+      # working set — память, которую ядро не может освободить без ущерба для процесса; именно её
+      # ядро сравнивает с лимитом. У контейнеров без лимита он равен 0 — их отсекает условие «> 0»,
+      # иначе деление дало бы бесконечность.
+      - alert: ContainerMemoryNearLimit
+        expr: >-
+          container_memory_working_set_bytes{name!=""}
+          / (container_spec_memory_limit_bytes{name!=""} > 0) > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Контейнер {{ $labels.name }} близок к лимиту памяти"
+          description: "Занято {{ $value | humanizePercentage }} лимита. Дальше — OOM kill и перезапуск. Лимиты задаются в defaults ролей."
+
+      # Время запуска меняется, когда тот же контейнер запускается заново (restart: unless-stopped
+      # после падения). Пересоздание при выкатке сюда не попадает: у нового контейнера другой id —
+      # это новый ряд, а не изменение прежнего. Один перезапуск может быть ручным; два за 15 минут — нет.
+      - alert: ContainerRestarting
+        expr: changes(container_start_time_seconds{name!=""}[15m]) >= 2
+        labels:
+          severity: warning
+        annotations:
+          summary: "Контейнер {{ $labels.name }} перезапускается"
+          description: "Запусков за 15 минут: {{ $value | printf \"%.0f\" }}. Смотреть: docker logs {{ $labels.name }}."

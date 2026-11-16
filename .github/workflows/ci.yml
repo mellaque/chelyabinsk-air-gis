@@ -71,6 +71,12 @@ jobs:
         working-directory: ansible
         run: ansible-lint
 
+      # promtool запускается из того же образа Prometheus, что работает на сервере (digest — в роли
+      # monitoring). Тесты подают на вход придуманные метрики и проверяют, когда алерты срабатывают:
+      # правило с опечаткой в имени метрики синтаксически верно, но не сработало бы никогда
+      - name: Правила алертов Prometheus — синтаксис и тесты (promtool)
+        run: sh scripts/test_alert_rules.sh
+
       # Секреты хранятся вне репозитория (ansible/vault.example.yml). Файл или значение, зашифрованные
       # ansible-vault, начинаются с заголовка $ANSIBLE_VAULT — в репозитории таких быть не должно
       - name: В репозитории нет файлов ansible-vault

@@ -2,3 +2,7 @@
 # Сколько сервисов описано в templates/compose.yaml.j2: prometheus, node-exporter, cadvisor, blackbox,
 # grafana. Не настройка, а свойство шаблона — поэтому в vars, а не в defaults.
 monitoring_services: 5
+
+# Файлы правил алертов в роли. Список нужен трижды: скопировать их, удалить с сервера лишние
+# и посчитать, сколько правил должен загрузить Prometheus.
+monitoring_rule_files: "{{ query('ansible.builtin.fileglob', role_path ~ '/files/prometheus/rules/*.yml') | sort }}"

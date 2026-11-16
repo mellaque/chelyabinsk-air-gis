@@ -1,0 +1,86 @@
+---
+# Правила алертов: сервер (метрики node_exporter). Файл копируется на сервер как есть:
+# {{ … }} — шаблоны Prometheus.
+# Алертов на загрузку процессора нет намеренно: высокая загрузка сама по себе не поломка,
+# а её последствия (сайт не отвечает, не хватает памяти) ловят другие правила.
+groups:
+  - name: host
+    rules:
+      - alert: DiskSpaceLow
+        expr: node_filesystem_avail_bytes{fstype=~"ext4|vfat"} / node_filesystem_size_bytes < 0.15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Мало места на {{ $labels.mountpoint }}"
+          description: "Свободно {{ $value | humanizePercentage }}. Смотреть: docker system df, старые образы, журналы."
+
+      - alert: DiskSpaceCritical
+        expr: node_filesystem_avail_bytes{fstype=~"ext4|vfat"} / node_filesystem_size_bytes < 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Место на {{ $labels.mountpoint }} заканчивается"
+          description: "Свободно {{ $value | humanizePercentage }}."
+
+      # ext4 при ошибках ввода-вывода перемонтируется «только для чтения» — так обычно и выглядит
+      # отказ диска. smartd следит за самим диском, это правило — за последствиями.
+      - alert: FilesystemReadOnly
+        expr: node_filesystem_readonly{fstype=~"ext4|vfat"} == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Файловая система {{ $labels.mountpoint }} доступна только для чтения"
+          description: "Вероятны ошибки диска. Смотреть: journalctl -k, smartctl -a."
+
+      # MemAvailable — оценка ядра, сколько памяти можно отдать программам без подкачки
+      # (в отличие от MemFree, учитывает кэш, который можно освободить)
+      - alert: MemoryLow
+        expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes < 0.10
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "На сервере мало памяти"
+          description: "Доступно {{ $value | humanizePercentage }}. Смотреть: дашборд «Контейнеры»."
+
+      # Счётчик ядра: сколько раз процесс был убит из-за нехватки памяти — и на сервере целиком,
+      # и внутри контейнера, упёршегося в свой лимит. (Свой счётчик cAdvisor без /dev/kmsg не работает.)
+      - alert: OomKill
+        expr: increase(node_vmstat_oom_kill[10m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: "Ядро завершило процесс из-за нехватки памяти"
+          description: "Смотреть: journalctl -k | grep -i oom — там видно, какой контейнер."
+
+      # Сервер — ноутбук: батарея работает как ИБП. Две минуты — чтобы не сообщать о мигнувшем свете.
+      - alert: OnBattery
+        expr: node_power_supply_online == 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Сервер работает от батареи"
+          description: "Нет питания от сети. Смотреть: блок питания и розетку."
+
+      # В режиме сохранения батарея держит 58–60 % — это норма; 30 % — значит, она разряжается
+      - alert: BatteryLow
+        expr: node_power_supply_capacity < 30
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Батарея сервера разряжается: {{ $value | printf \"%.0f\" }} %"
+          description: "Сервер скоро выключится."
+
+      # Сама по себе перезагрузка не поломка, но незапланированная — повод посмотреть почему
+      - alert: HostRebooted
+        expr: time() - node_boot_time_seconds < 600
+        labels:
+          severity: info
+        annotations:
+          summary: "Сервер был перезагружен"
+          description: "Работает {{ $value | humanizeDuration }}."

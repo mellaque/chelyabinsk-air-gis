@@ -34,6 +34,7 @@
     mode: "0755"
   loop:
     - prometheus
+    - prometheus/rules
     - blackbox
     - grafana
 
@@ -123,6 +124,42 @@
       --volume {{ monitoring_dir }}/blackbox:/etc/blackbox:ro --volume %s:/tmp/blackbox.yml:ro
       {{ monitoring_blackbox_image }} --config.check --config.file=/tmp/blackbox.yml
   notify: Перечитать конфигурацию blackbox_exporter
+
+# Правила алертов — обычные файлы, а не шаблоны: внутри есть {{ … }} для текста уведомлений,
+# это шаблоны Prometheus. Каждый файл перед заменой проверяет promtool из того же образа.
+- name: Правила алертов
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ monitoring_dir }}/prometheus/rules/{{ item | basename }}"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: >-
+      docker run --rm --network none --user 0:0 --entrypoint /bin/promtool
+      --volume %s:/tmp/rules.yml:ro
+      {{ monitoring_prometheus_image }} check rules /tmp/rules.yml
+  loop: "{{ monitoring_rule_files }}"
+  loop_control:
+    label: "{{ item | basename }}"
+  notify: Перечитать конфигурацию Prometheus
+
+# Prometheus читает все файлы каталога: переименованный или удалённый из роли файл остался бы
+# на сервере, и его правила продолжали бы работать
+- name: Правила алертов — какие файлы есть на сервере
+  ansible.builtin.find:
+    paths: "{{ monitoring_dir }}/prometheus/rules"
+    patterns: "*.yml"
+  register: monitoring_rules_present
+
+- name: Правила алертов — лишние файлы удалены
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ monitoring_rules_present.files }}"
+  loop_control:
+    label: "{{ item.path | basename }}"
+  when: (item.path | basename) not in (monitoring_rule_files | map('basename'))
+  notify: Перечитать конфигурацию Prometheus
 
 - name: Конфигурация Prometheus
   ansible.builtin.template:
@@ -218,3 +255,41 @@
   vars:
     # Prometheus, node_exporter, blackbox_exporter, cAdvisor, Caddy, Grafana и по одной цели на каждую проверку
     monitoring_targets_expected: "{{ 6 + (monitoring_probes_internal | length) + (monitoring_probes_public | length) }}"
+
+# Вторая половина той же проверки: при ошибке в файле правил Prometheus после SIGHUP молча остаётся
+# на прежней конфигурации. Поэтому число загруженных правил сверяется с числом правил в файлах роли.
+- name: Prometheus загрузил все правила алертов
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ monitoring_dir }}/compose.yaml"
+      - exec
+      - --no-TTY
+      - prometheus
+      - promtool
+      - query
+      - instant
+      - http://127.0.0.1:9090
+      - sum(prometheus_rule_group_rules)
+  register: monitoring_rules_loaded
+  changed_when: false
+  check_mode: false
+  retries: "{{ (monitoring_wait_timeout | int / 5) | int }}"
+  delay: 5
+  until: >-
+    monitoring_rules_loaded.rc == 0 and
+    (monitoring_rules_loaded.stdout | regex_findall('=> ([0-9]+) ') | first | default('0') | int)
+    == monitoring_rules_expected | int
+  # При --check правила на сервер ещё не скопированы
+  when: not ansible_check_mode
+  vars:
+    monitoring_rules_expected: >-
+      {%- set total = namespace(rules=0) -%}
+      {%- for rule_file in monitoring_rule_files -%}
+      {%- for rule_group in (lookup('ansible.builtin.file', rule_file) | from_yaml)['groups'] -%}
+      {%- set total.rules = total.rules + (rule_group['rules'] | length) -%}
+      {%- endfor -%}
+      {%- endfor -%}
+      {{ total.rules }}

@@ -115,6 +115,16 @@ validate-data:
   script:
     - python scripts/validate_data.py   # только стандартная библиотека — без установки зависимостей
 
+# Правила алертов Prometheus: синтаксис и тесты. Версия образа — та же, что в роли monitoring
+# (ansible/roles/monitoring/defaults/main.yml): при расхождении скрипт завершится с ошибкой.
+alert-rules:
+  stage: test
+  image:
+    name: prom/prometheus:v3.16.0
+    entrypoint: [""]              # в образе точка входа — сам Prometheus, а заданию нужна оболочка
+  script:
+    - sh scripts/test_alert_rules.sh
+
 # ---------------------------------------------------------------- build
 
 docker:
