@@ -155,7 +155,7 @@ python scripts/validate_data.py
 | Проверка | Что делает |
 |---|---|
 | **Линтеры** | actionlint и [zizmor](https://docs.zizmor.sh/) проверяют workflow GitHub Actions (синтаксис, выражения, безопасность, известные уязвимости в actions), shellcheck — shell-скрипты; версии — в `requirements-lint.txt` |
-| **Ansible** | ansible-lint (профиль production) проверяет каталог `ansible/`: плейбук, роли, инвентарь; отдельный шаг следит, чтобы в репозиторий не попали файлы ansible-vault; версии — в `requirements-ansible.txt` |
+| **Ansible** | ansible-lint (профиль production) проверяет каталог `ansible/`: плейбук, роли, инвентарь; отдельный шаг следит, чтобы в репозиторий не попали файлы ansible-vault; правила алертов Prometheus проверяются тестами (`promtool test rules` из того же образа, что на сервере); версии — в `requirements-ansible.txt` |
 | **Ruff** | стиль кода и типичные ошибки в Python |
 | **pytest** (Python 3.12 и 3.14) | тесты обработки NetCDF → JSON и проверки данных на синтетических файлах; тесты загрузчика на локальном «фальшивом NASA» (каталог, авторизация, редирект без утечки токена, докачка, повторы); тесты синхронизации зеркал на локальных git-репозиториях |
 | **Проверка данных** | `scripts/validate_data.py`: все `data/*.json` в актуальном формате, размерности совпадают, нет NaN и отрицательных значений, у проверенных данных указан источник, в `region.geojson` нет битой кодировки |
@@ -282,6 +282,7 @@ GitHub показывает их как Verified, а GitLab и GitVerse — ка
 │   ├── update_data.sh          # загрузка + обработка + проверка всех веществ
 │   ├── validate_data.py        # проверка формата данных (CI и сборка образа)
 │   ├── smoke_test.sh           # проверка запущенного сайта
+│   ├── test_alert_rules.sh     # правила алертов Prometheus: синтаксис и тесты (promtool)
 │   ├── sync_mirrors.sh         # синхронизация зеркал GitLab и GitVerse с GitHub
 │   ├── vendor_frontend.py      # библиотеки фронтенда: node_modules → vendor/
 │   ├── prepare_region.py       # подготовка границ из выгрузки OSM
@@ -295,7 +296,7 @@ GitHub показывает их как Verified, а GitLab и GitVerse — ка
 │   ├── roles/docker/           # роль: Docker CE и Compose из репозитория Docker, ротация журналов контейнеров
 │   ├── roles/app/              # роль: проверка подписи образа (cosign) и запуск сайта по digest
 │   ├── roles/proxy/            # роль: обратный прокси Caddy, HTTPS с собственным центром сертификации
-│   ├── roles/monitoring/       # роль: Prometheus, node_exporter, cAdvisor, blackbox_exporter (проверки сайта по HTTPS), метрики Caddy, Grafana с дашбордами из файлов
+│   ├── roles/monitoring/       # роль: Prometheus, node_exporter, cAdvisor, blackbox_exporter (проверки сайта по HTTPS), метрики Caddy, Grafana с дашбордами из файлов, правила алертов с тестами
 │   └── vault.example.yml       # образец файла с секретами (настоящий — вне репозитория)
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных

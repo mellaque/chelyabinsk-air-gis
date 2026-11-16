@@ -4,6 +4,11 @@ global:
   scrape_timeout: 10s
   evaluation_interval: {{ monitoring_scrape_interval }}
 
+# Правила алертов. Файлы лежат в роли (files/prometheus/rules) и проверяются тестами
+# (tests/rules, scripts/test_alert_rules.sh). Перечитываются вместе с конфигурацией — по SIGHUP.
+rule_files:
+  - /etc/prometheus/rules/*.yml
+
 scrape_configs:
   # Сам Prometheus: размер базы, длительность опросов, ошибки
   - job_name: prometheus
