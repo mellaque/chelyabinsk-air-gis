@@ -27,3 +27,4 @@
     - role: docker
     - role: app
     - role: proxy
+    - role: monitoring

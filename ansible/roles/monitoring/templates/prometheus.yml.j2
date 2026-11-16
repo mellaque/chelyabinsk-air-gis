@@ -1,0 +1,51 @@
+# Конфигурация Prometheus. Файл создаёт Ansible (роль monitoring) — правки вручную будут перезаписаны.
+global:
+  scrape_interval: {{ monitoring_scrape_interval }}
+  scrape_timeout: 10s
+  evaluation_interval: {{ monitoring_scrape_interval }}
+
+scrape_configs:
+  # Сам Prometheus: размер базы, длительность опросов, ошибки
+  - job_name: prometheus
+    static_configs:
+      - targets: ["127.0.0.1:9090"]
+
+  # Метрики хоста. node_exporter работает в сети хоста и слушает адрес шлюза сети monitoring;
+  # в метке instance вместо этого адреса — имя сервера
+  - job_name: node
+    static_configs:
+      - targets: ["{{ monitoring_gateway }}:{{ monitoring_node_exporter_port }}"]
+        labels:
+          instance: {{ monitoring_node_name }}
+
+  # Метрики самого blackbox_exporter
+  - job_name: blackbox_exporter
+    static_configs:
+      - targets: ["blackbox:9115"]
+
+  # Проверки сайтов. Prometheus обращается не к сайту, а к blackbox_exporter: адрес сайта и модуль
+  # передаются параметрами запроса /probe?target=…&module=…, это и делают правила relabel_configs
+  - job_name: blackbox_http
+    metrics_path: /probe
+    static_configs:
+      - targets:
+{% for url in monitoring_probes_internal %}
+          - {{ url }}
+{% endfor %}
+        labels:
+          module: http_internal
+      - targets:
+{% for url in monitoring_probes_public %}
+          - {{ url }}
+{% endfor %}
+        labels:
+          module: http_public
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target          # адрес сайта → параметр target
+      - source_labels: [module]
+        target_label: __param_module          # метка module → параметр module
+      - source_labels: [__param_target]
+        target_label: instance                # в метриках instance — адрес сайта
+      - target_label: __address__
+        replacement: blackbox:9115            # а запрос уходит в blackbox_exporter

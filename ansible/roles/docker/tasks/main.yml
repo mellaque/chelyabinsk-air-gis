@@ -70,10 +70,19 @@
     - containerd
     - docker
 
+# Заодно читается подсеть сети: формат — шаблон Go для docker, а не Jinja, поэтому он в raw
 - name: Общие сети Docker — какие уже есть
   ansible.builtin.command:
-    argv: [docker, network, inspect, "{{ item }}"]
+    argv:
+      - docker
+      - network
+      - inspect
+      - --format
+      - "{% raw %}{{range .IPAM.Config}}{{.Subnet}} {{end}}{% endraw %}"
+      - "{{ item.name }}"
   loop: "{{ docker_networks }}"
+  loop_control:
+    label: "{{ item.name }}"
   register: docker_networks_present
   changed_when: false
   failed_when: false
@@ -81,9 +90,30 @@
 
 - name: Общие сети Docker созданы
   ansible.builtin.command:
-    argv: [docker, network, create, "{{ item.item }}"]
+    argv: >-
+      {{ ['docker', 'network', 'create']
+         + (['--subnet', item.item.subnet, '--gateway', item.item.gateway] if item.item.subnet is defined else [])
+         + [item.item.name] }}
   loop: "{{ docker_networks_present.results }}"
   loop_control:
-    label: "{{ item.item }}"
+    label: "{{ item.item.name }}"
   when: item.rc != 0
   changed_when: true
+
+# Подсеть существующей сети Docker изменить нельзя — только пересоздать сеть, отключив контейнеры.
+# Молча это делать опасно, поэтому расхождение останавливает прогон.
+- name: Подсети общих сетей Docker совпадают с заданными
+  ansible.builtin.assert:
+    that:
+      - item.stdout | trim == item.item.subnet
+    fail_msg: >-
+      У сети {{ item.item.name }} подсеть {{ item.stdout | trim }}, а задана {{ item.item.subnet }}.
+      Сеть нужно пересоздать вручную: остановить подключённые к ней контейнеры,
+      docker network rm {{ item.item.name }}, затем запустить плейбук заново.
+    quiet: true
+  loop: "{{ docker_networks_present.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - item.rc == 0
+    - item.item.subnet is defined

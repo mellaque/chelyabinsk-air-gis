@@ -1,0 +1,13 @@
+---
+# SIGHUP — штатный способ перечитать конфигурацию без перезапуска: метрики в памяти не теряются,
+# а при ошибке в файле программа остаётся на прежней конфигурации.
+# API перезагрузки (--web.enable-lifecycle) не включаем: он позволил бы и остановить Prometheus по HTTP.
+- name: Перечитать конфигурацию Prometheus
+  ansible.builtin.command:
+    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", kill, --signal, HUP, prometheus]
+  changed_when: true
+
+- name: Перечитать конфигурацию blackbox_exporter
+  ansible.builtin.command:
+    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", kill, --signal, HUP, blackbox]
+  changed_when: true

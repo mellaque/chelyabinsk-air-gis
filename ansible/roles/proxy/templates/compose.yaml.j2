@@ -16,7 +16,17 @@ services:
       - caddy_data:/data        # центр сертификации и выпущенные сертификаты
       - caddy_config:/config
     networks:
-      - proxy
+{% for network in proxy_networks %}
+{% if network.site_aliases | default(false) %}
+      {{ network.name }}:
+        aliases:                  # в этой сети имена сайтов ведут на прокси (для проверок blackbox)
+{% for site in proxy_sites %}
+          - {{ site.host }}
+{% endfor %}
+{% else %}
+      {{ network.name }}: {}
+{% endif %}
+{% endfor %}
     healthcheck:
       # API управления слушает только внутри контейнера
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
@@ -43,5 +53,7 @@ volumes:
   caddy_config:
 
 networks:
-  proxy:
-    external: true                # общую сеть создаёт роль docker
+{% for network in proxy_networks %}
+  {{ network.name }}:
+    external: true                # общие сети создаёт роль docker
+{% endfor %}

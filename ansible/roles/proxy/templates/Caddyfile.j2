@@ -9,6 +9,13 @@
 {% for site in proxy_sites %}
 
 {{ site.host }} {
+{% if site.allowed_sources is defined %}
+	# Сайт только для перечисленных адресов. remote_ip — адрес самого соединения:
+	# заголовку X-Forwarded-For здесь верить нельзя, его присылает клиент
+	@outside not remote_ip {{ site.allowed_sources | join(' ') }}
+	respond @outside "Forbidden" 403
+
+{% endif %}
 	# Сжимает прокси, а не сайт: nginx по умолчанию не сжимает ответы на запросы,
 	# пришедшие через прокси (заголовок Via), — см. gzip_proxied
 	encode zstd gzip

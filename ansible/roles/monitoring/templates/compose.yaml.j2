@@ -1,0 +1,85 @@
+# Мониторинг. Файл создаёт Ansible (роль monitoring) — правки вручную будут перезаписаны.
+# Ни одного опубликованного порта: Prometheus открывается через обратный прокси (сеть monitoring).
+name: monitoring
+
+services:
+  prometheus:
+    image: {{ monitoring_prometheus_image }}
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time={{ monitoring_retention_time }}
+      - --storage.tsdb.retention.size={{ monitoring_retention_size }}
+      - --web.external-url={{ monitoring_prometheus_url }}
+    volumes:
+      # Монтируется каталог, а не файл: при обновлении файл заменяется новым, и контейнер
+      # с примонтированным файлом продолжал бы видеть старый
+      - ./prometheus:/etc/prometheus:ro
+      - prometheus_data:/prometheus
+    networks:
+      - monitoring
+    healthcheck:
+      # ready, а не healthy: после перезапуска Prometheus сначала читает журнал (WAL) и не отвечает на запросы
+      test: ["CMD", "promtool", "check", "ready", "--url=http://127.0.0.1:9090"]
+      interval: 30s
+      timeout: 5s
+      start_period: 90s
+      start_interval: 2s
+      retries: 3
+    read_only: true               # пишет только в том с данными
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: {{ monitoring_prometheus_memory_limit }}
+    cpus: "{{ monitoring_prometheus_cpus }}"
+    pids_limit: {{ monitoring_pids_limit }}
+
+  # У экспортёров нет healthcheck: работают ли они, показывает метрика up в Prometheus,
+  # а роль в конце прогона проверяет, что опрошены все цели.
+  node-exporter:
+    image: {{ monitoring_node_exporter_image }}
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+      # Только адрес шлюза сети monitoring: из локальной сети порт недоступен, даже если firewall выключен
+      - --web.listen-address={{ monitoring_gateway }}:{{ monitoring_node_exporter_port }}
+    # Сеть и процессы хоста: иначе экспортёр видел бы интерфейсы и процессы контейнера, а не сервера
+    network_mode: host
+    pid: host
+    volumes:
+      - /:/host:ro,rslave         # файловые системы хоста, только чтение
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: {{ monitoring_exporter_memory_limit }}
+    cpus: "{{ monitoring_exporter_cpus }}"
+    pids_limit: {{ monitoring_pids_limit }}
+
+  blackbox:
+    image: {{ monitoring_blackbox_image }}
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/blackbox/blackbox.yml
+    volumes:
+      - ./blackbox:/etc/blackbox:ro
+    networks:
+      - monitoring
+    read_only: true
+    cap_drop:
+      - ALL                       # только HTTP-проверки; для ICMP понадобился бы NET_RAW
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: {{ monitoring_exporter_memory_limit }}
+    cpus: "{{ monitoring_exporter_cpus }}"
+    pids_limit: {{ monitoring_pids_limit }}
+
+volumes:
+  prometheus_data:
+
+networks:
+  monitoring:
+    external: true                # общую сеть создаёт роль docker
