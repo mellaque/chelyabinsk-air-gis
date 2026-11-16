@@ -24,6 +24,14 @@ base_sleep_targets:
 base_firewall_ssh_sources:
   - "{{ ansible_facts['default_ipv4']['network'] }}/{{ ansible_facts['default_ipv4']['prefix'] }}"
 
+# Дополнительные разрешения: TCP-порт хоста для заданной подсети. Сейчас это node_exporter:
+# он работает в сети хоста, а Prometheus приходит к нему из сети Docker «monitoring»
+# (значения — в group_vars/all.yml). Из локальной сети порт остаётся закрыт.
+base_firewall_tcp_rules:
+  - comment: node_exporter — только для сети Docker monitoring
+    source: "{{ monitoring_subnet }}"
+    port: "{{ monitoring_node_exporter_port }}"
+
 # UDP-порт Tailscale (WireGuard)
 base_firewall_tailscale_port: 41641
 

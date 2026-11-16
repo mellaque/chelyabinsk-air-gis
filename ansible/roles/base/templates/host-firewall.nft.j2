@@ -30,6 +30,11 @@ table inet host_firewall {
 {% for source in base_firewall_ssh_sources %}
 		ip saddr {{ source }} tcp dport 22 accept
 {% endfor %}
+{% for rule in base_firewall_tcp_rules %}
+
+		# {{ rule.comment }}
+		ip saddr {{ rule.source }} tcp dport {{ rule.port }} accept
+{% endfor %}
 
 		# Всё остальное отбрасывается политикой цепочки; правило только считает пакеты
 		counter comment "dropped"

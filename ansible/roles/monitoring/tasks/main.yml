@@ -1,0 +1,157 @@
+---
+# Мониторинг: Prometheus собирает метрики, node_exporter отдаёт метрики хоста, blackbox_exporter
+# проверяет сайты запросами по HTTPS. Веб-интерфейс Prometheus открывается через обратный прокси.
+# Конфигурацию перед заменой проверяют сами программы из тех же образов (promtool, --config.check).
+
+- name: Сеть мониторинга описана
+  ansible.builtin.assert:
+    that:
+      - monitoring_subnet is defined
+      - monitoring_gateway is defined
+      - monitoring_node_exporter_port is defined
+    fail_msg: "monitoring_subnet, monitoring_gateway и monitoring_node_exporter_port задаются в group_vars/all.yml"
+    quiet: true
+
+- name: Каталоги конфигурации
+  ansible.builtin.file:
+    path: "{{ monitoring_dir }}/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - prometheus
+    - blackbox
+
+# Сайты за обратным прокси подписаны его собственным центром сертификации. Чтобы blackbox
+# проверял и сертификат, ему нужен корневой сертификат — только он, без ключей: том caddy_data
+# целиком монтировать нельзя, в нём лежит ключ центра сертификации.
+- name: Корневой сертификат обратного прокси — прочитать
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ monitoring_proxy_compose_file }}"
+      - exec
+      - --no-TTY
+      - caddy
+      - cat
+      - "{{ monitoring_proxy_root_cert }}"
+  register: monitoring_root_cert
+  changed_when: false
+  check_mode: false   # только читает — выполняется и при --check
+  # При --check на чистом сервере прокси ещё не запущен — это не ошибка
+  failed_when:
+    - not ansible_check_mode
+    - monitoring_root_cert.rc != 0 or '-----BEGIN CERTIFICATE-----' not in monitoring_root_cert.stdout
+
+- name: Корневой сертификат обратного прокси — для blackbox_exporter
+  ansible.builtin.copy:
+    content: "{{ monitoring_root_cert.stdout | trim }}\n"
+    dest: "{{ monitoring_dir }}/blackbox/caddy-root.crt"
+    owner: root
+    group: root
+    mode: "0644"
+  when: monitoring_root_cert.rc == 0
+  notify: Перечитать конфигурацию blackbox_exporter
+
+# В образах программы работают от nobody, а временный файл Ansible доступен только root —
+# поэтому проверка запускается с --user 0:0 (без сети и только на время проверки)
+- name: Конфигурация blackbox_exporter
+  ansible.builtin.template:
+    src: blackbox.yml.j2
+    dest: "{{ monitoring_dir }}/blackbox/blackbox.yml"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: >-
+      docker run --rm --network none --user 0:0
+      --volume {{ monitoring_dir }}/blackbox:/etc/blackbox:ro --volume %s:/tmp/blackbox.yml:ro
+      {{ monitoring_blackbox_image }} --config.check --config.file=/tmp/blackbox.yml
+  notify: Перечитать конфигурацию blackbox_exporter
+
+- name: Конфигурация Prometheus
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ monitoring_dir }}/prometheus/prometheus.yml"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: >-
+      docker run --rm --network none --user 0:0 --entrypoint /bin/promtool
+      --volume %s:/tmp/prometheus.yml:ro
+      {{ monitoring_prometheus_image }} check config /tmp/prometheus.yml
+  notify: Перечитать конфигурацию Prometheus
+
+- name: Описание сервисов — compose.yaml
+  ansible.builtin.template:
+    src: compose.yaml.j2
+    dest: "{{ monitoring_dir }}/compose.yaml"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: docker compose -f %s config --quiet
+  register: monitoring_compose
+
+- name: Какие контейнеры работают
+  ansible.builtin.command:
+    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", ps, --status, running, --quiet]
+  register: monitoring_running
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+# Запуск нужен, если изменилось описание или работают не все три контейнера.
+# --wait ждёт, пока Prometheus станет healthy (у экспортёров healthcheck нет — см. compose.yaml).
+- name: Мониторинг запущен
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ monitoring_dir }}/compose.yaml"
+      - up
+      - --detach
+      - --wait
+      - --wait-timeout
+      - "{{ monitoring_wait_timeout }}"
+  changed_when: true
+  when: monitoring_compose is changed or (monitoring_running.stdout_lines | default([]) | length) < 3
+
+# Конфигурация должна быть перечитана до проверки целей, а не в конце прогона
+- name: Конфигурация перечитана, если она изменилась
+  ansible.builtin.meta: flush_handlers
+
+# Итог роли проверяется самим Prometheus: метрика up равна 1 у каждой цели, которую он смог
+# опросить. Целей должно быть ровно столько, сколько описано; после запуска первый опрос
+# занимает до одного интервала, поэтому проверка повторяется.
+- name: Prometheus опрашивает все цели
+  ansible.builtin.command:
+    argv:
+      - docker
+      - compose
+      - -f
+      - "{{ monitoring_dir }}/compose.yaml"
+      - exec
+      - --no-TTY
+      - prometheus
+      - promtool
+      - query
+      - instant
+      - http://127.0.0.1:9090
+      - count(up == 1)
+  register: monitoring_targets_up
+  changed_when: false
+  check_mode: false
+  retries: "{{ (monitoring_wait_timeout | int / 5) | int }}"
+  delay: 5
+  until: >-
+    monitoring_targets_up.rc == 0 and
+    (monitoring_targets_up.stdout | regex_findall('=> ([0-9]+) ') | first | default('0') | int)
+    == monitoring_targets_expected | int
+  # При --check на чистом сервере контейнеров ещё нет
+  when: not ansible_check_mode or (monitoring_running.stdout_lines | default([]) | length) == 3
+  vars:
+    # Prometheus, node_exporter, blackbox_exporter и по одной цели на каждую проверку
+    monitoring_targets_expected: "{{ 3 + (monitoring_probes_internal | length) + (monitoring_probes_public | length) }}"

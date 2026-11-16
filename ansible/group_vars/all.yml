@@ -6,3 +6,13 @@
 #   crane digest ghcr.io/mellaque/chelyabinsk-air-gis:latest
 # Подпись образа плейбук проверяет сам и без неё ничего не запустит.
 app_image_digest: sha256:7325d1ad145dff38951cc523acb07456b81bee5997ebb240dfe2eb21f36d4ff3
+
+# Сеть Docker «monitoring»: в ней Prometheus, экспортёры и обратный прокси. Подсеть задана явно
+# (Docker иначе выбрал бы её сам), потому что от неё зависят сразу три роли:
+#   docker     — создаёт сеть с этой подсетью;
+#   base       — открывает в firewall порт node_exporter только для неё;
+#   monitoring — node_exporter слушает адрес шлюза этой сети, Prometheus опрашивает его там же.
+# Диапазон 172.16.0.0/12 — частный (RFC 1918); в локальной сети и в tailnet таких адресов нет.
+monitoring_subnet: 172.30.0.0/24
+monitoring_gateway: 172.30.0.1
+monitoring_node_exporter_port: 9100

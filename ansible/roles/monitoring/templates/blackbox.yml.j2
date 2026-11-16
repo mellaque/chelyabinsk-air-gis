@@ -1,0 +1,23 @@
+# Проверки blackbox_exporter. Файл создаёт Ansible (роль monitoring) — правки вручную будут перезаписаны.
+# Модуль — это «как проверять»; что именно проверять, задаёт Prometheus (prometheus.yml).
+modules:
+  # Сайты в интернете: сертификат проверяется по обычным корневым сертификатам из образа
+  http_public:
+    prober: http
+    timeout: 10s
+    http:
+      preferred_ip_protocol: ip4
+      ip_protocol_fallback: false
+      fail_if_not_ssl: true
+
+  # Сайты за обратным прокси: сертификат выпущен его центром сертификации, поэтому доверяем
+  # только его корневому сертификату (ca_file заменяет системный список, а не дополняет)
+  http_internal:
+    prober: http
+    timeout: 5s
+    http:
+      preferred_ip_protocol: ip4
+      ip_protocol_fallback: false
+      fail_if_not_ssl: true
+      tls_config:
+        ca_file: /etc/blackbox/caddy-root.crt

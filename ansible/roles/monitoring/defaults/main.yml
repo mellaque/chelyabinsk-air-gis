@@ -1,0 +1,48 @@
+---
+# Образы: тег для человека, digest — для воспроизводимости (docker использует именно его).
+# Обновление: crane digest prom/prometheus:<версия> — и так же для остальных.
+monitoring_prometheus_image: prom/prometheus:v3.16.0@sha256:e04987641b57704f408e31f6373ba4138ecf27cb4a165d24aabb6c38fddd0f06
+monitoring_node_exporter_image: prom/node-exporter:v1.12.1@sha256:1b4e4438faca4dd7e001dd445d161a4a2091b0fededa84093b3a8dfeae1f1be0
+monitoring_blackbox_image: prom/blackbox-exporter:v0.29.1@sha256:ea1c7aa3ef3f307cd03e85f34abb604478ccb90b567fc690da0cd9776da76b13
+
+# Каталог с compose.yaml и конфигурацией на сервере
+monitoring_dir: /opt/monitoring
+
+# Адрес, по которому Prometheus открывается через обратный прокси (сайт описан в роли proxy)
+monitoring_prometheus_url: https://prometheus.home.arpa/
+
+# Как часто собирать метрики. 30 с вместо привычных 15: вдвое меньше записи на диск,
+# а для домашнего сервера такой точности достаточно.
+monitoring_scrape_interval: 30s
+
+# Хранение: срабатывает то ограничение, которое наступит раньше. Диск сервера не новый —
+# объём записи ограничен намеренно.
+monitoring_retention_time: 15d
+monitoring_retention_size: 2GB
+
+# Имя сервера в метках метрик (вместо адреса шлюза сети Docker)
+monitoring_node_name: "{{ inventory_hostname }}"
+
+# Проверки blackbox_exporter: «снаружи», по HTTPS, как видит сайт браузер.
+# Внутренние — сайты за обратным прокси (сертификат выпущен центром сертификации Caddy).
+monitoring_probes_internal:
+  - https://air-gis.home.arpa/healthz
+  - https://air-gis.home.arpa/
+# Публичные — сайты в интернете с обычными сертификатами: демо на GitHub Pages.
+monitoring_probes_public:
+  - https://mellaque.github.io/chelyabinsk-air-gis/
+
+# compose.yaml обратного прокси и путь к корневому сертификату его центра сертификации
+# внутри контейнера (каталог тот же, что proxy_dir в роли proxy)
+monitoring_proxy_compose_file: /opt/proxy/compose.yaml
+monitoring_proxy_root_cert: /data/caddy/pki/authorities/local/root.crt
+
+# Ограничения контейнеров
+monitoring_prometheus_memory_limit: 768m
+monitoring_prometheus_cpus: "1.00"
+monitoring_exporter_memory_limit: 64m
+monitoring_exporter_cpus: "0.25"
+monitoring_pids_limit: 128
+
+# Сколько секунд ждать запуска контейнеров и первого опроса всех целей
+monitoring_wait_timeout: 120

@@ -17,6 +17,12 @@ docker_log_max_size: 10m
 docker_log_max_file: "3"
 
 # Общие сети Docker. Через них контейнеры из разных compose-проектов видят друг друга по именам,
-# не публикуя порты на хосте. proxy — обратный прокси и сайты за ним.
+# не публикуя порты на хосте.
+#   proxy      — обратный прокси и сайты за ним; подсеть выбирает Docker;
+#   monitoring — Prometheus, экспортёры и обратный прокси; подсеть и шлюз заданы явно
+#                (group_vars/all.yml): на них ссылаются firewall и node_exporter.
 docker_networks:
-  - proxy
+  - name: proxy
+  - name: monitoring
+    subnet: "{{ monitoring_subnet }}"
+    gateway: "{{ monitoring_gateway }}"
