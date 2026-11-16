@@ -1,0 +1,33 @@
+# Конфигурация Alertmanager. Файл создаёт Ansible (роль monitoring) — правки вручную будут перезаписаны.
+route:
+  receiver: ntfy
+  group_by: [alertname, severity]
+  group_wait: {{ monitoring_alert_group_wait }}
+  group_interval: {{ monitoring_alert_group_interval }}
+  repeat_interval: {{ monitoring_alert_repeat_interval }}
+  routes:
+    # О критичном напоминаем чаще
+    - matchers: ['severity="critical"']
+      repeat_interval: {{ monitoring_alert_repeat_interval_critical }}
+    # Сообщения «к сведению» (сервер был перезагружен) в «исправлено» не нуждаются
+    - matchers: ['severity="info"']
+      receiver: ntfy-firing-only
+
+# Адрес канала ntfy — в отдельном файле (url_file): его нет ни здесь, ни на странице Status,
+# и читается он при каждой отправке — после замены файла перезапуск не нужен.
+receivers:
+  - name: ntfy
+    webhook_configs:
+      - url_file: /run/secrets/ntfy-url
+        send_resolved: true
+  - name: ntfy-firing-only
+    webhook_configs:
+      - url_file: /run/secrets/ntfy-url
+        send_resolved: false
+
+# Подавление: пока активен алерт-источник, алерт-цель с теми же метками из equal не отправляется
+inhibit_rules:
+  # «Место заканчивается» включает в себя «мало места» на той же файловой системе
+  - source_matchers: ['alertname="DiskSpaceCritical"']
+    target_matchers: ['alertname="DiskSpaceLow"']
+    equal: [instance, mountpoint]

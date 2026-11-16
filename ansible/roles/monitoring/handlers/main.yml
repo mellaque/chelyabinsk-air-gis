@@ -11,3 +11,11 @@
   ansible.builtin.command:
     argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", kill, --signal, HUP, blackbox]
   changed_when: true
+
+# Только если Alertmanager работал до этого прогона: только что созданный прочитал свежий файл сам,
+# а SIGHUP в первые мгновения после запуска, пока обработчик сигнала ещё не установлен, завершил бы процесс
+- name: Перечитать конфигурацию Alertmanager
+  ansible.builtin.command:
+    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", kill, --signal, HUP, alertmanager]
+  changed_when: true
+  when: "'alertmanager' in (monitoring_running.stdout_lines | default([]))"

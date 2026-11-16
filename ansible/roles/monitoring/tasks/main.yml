@@ -1,5 +1,6 @@
 ---
-# Мониторинг: Prometheus собирает метрики, node_exporter отдаёт метрики хоста, cAdvisor — метрики
+# Мониторинг: Prometheus собирает метрики и вычисляет правила алертов, Alertmanager отправляет
+# уведомления в ntfy, node_exporter отдаёт метрики хоста, cAdvisor — метрики
 # контейнеров, blackbox_exporter проверяет сайты запросами по HTTPS; свои метрики отдаёт и обратный
 # прокси. Grafana показывает всё это на дашбордах. Prometheus и Grafana открываются через обратный прокси.
 # Конфигурацию перед заменой проверяют сами программы из тех же образов (promtool, --config.check).
@@ -25,6 +26,18 @@
       ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault-pass
     quiet: true
 
+# Значение не выводится. Имя канала ntfy — секрет: кто его знает, тот читает и пишет в канал
+- name: Адрес канала ntfy задан
+  ansible.builtin.assert:
+    that:
+      - vault_ntfy_topic_url is defined
+      - vault_ntfy_topic_url is match('https://[^/?#]+/[^/?#]+$')
+      - "'заменить' not in vault_ntfy_topic_url"
+    fail_msg: >-
+      В файле с секретами нужен vault_ntfy_topic_url вида https://ntfy.sh/имя-канала (образец — vault.example.yml):
+      ansible-vault edit ~/.config/air-gis/vault.yml
+    quiet: true
+
 - name: Каталоги конфигурации
   ansible.builtin.file:
     path: "{{ monitoring_dir }}/{{ item }}"
@@ -35,6 +48,7 @@
   loop:
     - prometheus
     - prometheus/rules
+    - alertmanager
     - blackbox
     - grafana
 
@@ -55,6 +69,28 @@
     group: root
     mode: "0400"
   no_log: true   # иначе пароль попал бы в вывод и в diff
+
+# Каталог монтируется в контейнер целиком; читает его только пользователь Alertmanager
+- name: Каталог секретов Alertmanager
+  ansible.builtin.file:
+    path: "{{ monitoring_dir }}/secrets/alertmanager"
+    state: directory
+    owner: "{{ monitoring_alertmanager_uid }}"
+    group: root
+    mode: "0500"
+
+# Адрес, на который Alertmanager отправляет уведомления: канал ntfy и шаблоны заголовка, текста
+# и приоритета (их применяет сервер ntfy). Перезапуск не нужен: файл читается при каждой отправке.
+- name: Адрес канала ntfy — файл для Alertmanager
+  ansible.builtin.copy:
+    content: >-
+      {{ monitoring_ntfy_topic_url }}?template=yes&priority={{ monitoring_ntfy_priority | urlencode
+      }}&title={{ monitoring_ntfy_title | urlencode }}&message={{ monitoring_ntfy_message | urlencode }}
+    dest: "{{ monitoring_dir }}/secrets/alertmanager/ntfy-url"
+    owner: "{{ monitoring_alertmanager_uid }}"
+    group: root
+    mode: "0400"
+  no_log: true   # иначе имя канала попало бы в вывод и в diff
 
 # Источник данных Grafana читает только при запуске — после изменения нужен перезапуск (ниже)
 - name: Grafana — источник данных и поставщик дашбордов
@@ -124,6 +160,19 @@
       --volume {{ monitoring_dir }}/blackbox:/etc/blackbox:ro --volume %s:/tmp/blackbox.yml:ro
       {{ monitoring_blackbox_image }} --config.check --config.file=/tmp/blackbox.yml
   notify: Перечитать конфигурацию blackbox_exporter
+
+- name: Конфигурация Alertmanager
+  ansible.builtin.template:
+    src: alertmanager.yml.j2
+    dest: "{{ monitoring_dir }}/alertmanager/alertmanager.yml"
+    owner: root
+    group: root
+    mode: "0644"
+    validate: >-
+      docker run --rm --network none --user 0:0 --entrypoint /bin/amtool
+      --volume %s:/tmp/alertmanager.yml:ro
+      {{ monitoring_alertmanager_image }} check-config /tmp/alertmanager.yml
+  notify: Перечитать конфигурацию Alertmanager
 
 # Правила алертов — обычные файлы, а не шаблоны: внутри есть {{ … }} для текста уведомлений,
 # это шаблоны Prometheus. Каждый файл перед заменой проверяет promtool из того же образа.
@@ -253,8 +302,9 @@
   # При --check на чистом сервере контейнеров ещё нет
   when: not ansible_check_mode or (monitoring_running.stdout_lines | default([]) | length) == monitoring_services
   vars:
-    # Prometheus, node_exporter, blackbox_exporter, cAdvisor, Caddy, Grafana и по одной цели на каждую проверку
-    monitoring_targets_expected: "{{ 6 + (monitoring_probes_internal | length) + (monitoring_probes_public | length) }}"
+    # Prometheus, Alertmanager, node_exporter, blackbox_exporter, cAdvisor, Caddy, Grafana
+    # и по одной цели на каждую проверку
+    monitoring_targets_expected: "{{ 7 + (monitoring_probes_internal | length) + (monitoring_probes_public | length) }}"
 
 # Вторая половина той же проверки: при ошибке в файле правил Prometheus после SIGHUP молча остаётся
 # на прежней конфигурации. Поэтому число загруженных правил сверяется с числом правил в файлах роли.

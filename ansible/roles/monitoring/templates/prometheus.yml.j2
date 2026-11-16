@@ -9,6 +9,13 @@ global:
 rule_files:
   - /etc/prometheus/rules/*.yml
 
+# Куда отправлять сработавшие алерты. Prometheus только вычисляет правила; группировкой,
+# повторами и доставкой уведомлений занимается Alertmanager
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
 scrape_configs:
   # Сам Prometheus: размер базы, длительность опросов, ошибки
   - job_name: prometheus
@@ -22,6 +29,11 @@ scrape_configs:
       - targets: ["{{ monitoring_gateway }}:{{ monitoring_node_exporter_port }}"]
         labels:
           instance: {{ monitoring_node_name }}
+
+  # Метрики Alertmanager: сколько уведомлений отправлено и сколько не удалось отправить
+  - job_name: alertmanager
+    static_configs:
+      - targets: ["alertmanager:9093"]
 
   # Метрики самого blackbox_exporter
   - job_name: blackbox_exporter
