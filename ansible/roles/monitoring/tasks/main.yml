@@ -1,6 +1,7 @@
 ---
-# Мониторинг: Prometheus собирает метрики, node_exporter отдаёт метрики хоста, blackbox_exporter
-# проверяет сайты запросами по HTTPS. Веб-интерфейс Prometheus открывается через обратный прокси.
+# Мониторинг: Prometheus собирает метрики, node_exporter отдаёт метрики хоста, cAdvisor — метрики
+# контейнеров, blackbox_exporter проверяет сайты запросами по HTTPS; свои метрики отдаёт и обратный
+# прокси. Веб-интерфейс Prometheus открывается через обратный прокси.
 # Конфигурацию перед заменой проверяют сами программы из тех же образов (promtool, --config.check).
 
 - name: Сеть мониторинга описана
@@ -102,7 +103,7 @@
   failed_when: false
   check_mode: false
 
-# Запуск нужен, если изменилось описание или работают не все три контейнера.
+# Запуск нужен, если изменилось описание или работают не все контейнеры.
 # --wait ждёт, пока Prometheus станет healthy (у экспортёров healthcheck нет — см. compose.yaml).
 - name: Мониторинг запущен
   ansible.builtin.command:
@@ -117,7 +118,7 @@
       - --wait-timeout
       - "{{ monitoring_wait_timeout }}"
   changed_when: true
-  when: monitoring_compose is changed or (monitoring_running.stdout_lines | default([]) | length) < 3
+  when: monitoring_compose is changed or (monitoring_running.stdout_lines | default([]) | length) < monitoring_services
 
 # Конфигурация должна быть перечитана до проверки целей, а не в конце прогона
 - name: Конфигурация перечитана, если она изменилась
@@ -151,7 +152,7 @@
     (monitoring_targets_up.stdout | regex_findall('=> ([0-9]+) ') | first | default('0') | int)
     == monitoring_targets_expected | int
   # При --check на чистом сервере контейнеров ещё нет
-  when: not ansible_check_mode or (monitoring_running.stdout_lines | default([]) | length) == 3
+  when: not ansible_check_mode or (monitoring_running.stdout_lines | default([]) | length) == monitoring_services
   vars:
-    # Prometheus, node_exporter, blackbox_exporter и по одной цели на каждую проверку
-    monitoring_targets_expected: "{{ 3 + (monitoring_probes_internal | length) + (monitoring_probes_public | length) }}"
+    # Prometheus, node_exporter, blackbox_exporter, cAdvisor, Caddy и по одной цели на каждую проверку
+    monitoring_targets_expected: "{{ 5 + (monitoring_probes_internal | length) + (monitoring_probes_public | length) }}"

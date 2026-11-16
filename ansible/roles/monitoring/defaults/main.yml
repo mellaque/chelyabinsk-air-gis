@@ -4,6 +4,8 @@
 monitoring_prometheus_image: prom/prometheus:v3.16.0@sha256:e04987641b57704f408e31f6373ba4138ecf27cb4a165d24aabb6c38fddd0f06
 monitoring_node_exporter_image: prom/node-exporter:v1.12.1@sha256:1b4e4438faca4dd7e001dd445d161a4a2091b0fededa84093b3a8dfeae1f1be0
 monitoring_blackbox_image: prom/blackbox-exporter:v0.29.1@sha256:ea1c7aa3ef3f307cd03e85f34abb604478ccb90b567fc690da0cd9776da76b13
+# cAdvisor: с версии 0.53 образы публикуются в GHCR (в gcr.io остались только старые)
+monitoring_cadvisor_image: ghcr.io/google/cadvisor:v0.60.6@sha256:b8e7d1093144fd088f425ff003d75a4aa405de075db78dae3bc563730b1bd07a
 
 # Каталог с compose.yaml и конфигурацией на сервере
 monitoring_dir: /opt/monitoring
@@ -31,6 +33,25 @@ monitoring_probes_internal:
 # Публичные — сайты в интернете с обычными сертификатами: демо на GitHub Pages.
 monitoring_probes_public:
   - https://mellaque.github.io/chelyabinsk-air-gis/
+
+# Метрики обратного прокси: имя сервиса Caddy в сети monitoring и порт (proxy_metrics_port в роли proxy)
+monitoring_caddy_metrics_target: caddy:9180
+
+# cAdvisor — метрики контейнеров. Какие группы метрик собирать: по умолчанию их гораздо больше
+# (процессы, TCP, планировщик…), и почти все они здесь не нужны, а стоят памяти и места в базе.
+monitoring_cadvisor_metrics:
+  - cpu
+  - memory
+  - network
+  - diskIO
+# Как часто cAdvisor опрашивает контейнеры. По умолчанию — раз в секунду; чаще, чем Prometheus
+# забирает метрики, смысла нет.
+monitoring_cadvisor_interval: "{{ monitoring_scrape_interval }}"
+# Какие метки контейнеров попадают в метрики. Все метки не нужны: это десятки лишних меток на серию.
+monitoring_cadvisor_labels:
+  - com.docker.compose.project
+  - com.docker.compose.service
+monitoring_cadvisor_memory_limit: 192m
 
 # compose.yaml обратного прокси и путь к корневому сертификату его центра сертификации
 # внутри контейнера (каталог тот же, что proxy_dir в роли proxy)
