@@ -40,6 +40,16 @@
     group: root
     mode: "0644"
 
+# На чистом Debian 13 каталога нет: пакет systemd его не создаёт (нашёл тест molecule — на сервере
+# каталог остался от ручной настройки до Ansible)
+- name: Каталог для настроек systemd-logind
+  ansible.builtin.file:
+    path: /etc/systemd/logind.conf.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
 - name: Закрытая крышка ноутбука не усыпляет сервер
   ansible.builtin.copy:
     dest: /etc/systemd/logind.conf.d/lid.conf
