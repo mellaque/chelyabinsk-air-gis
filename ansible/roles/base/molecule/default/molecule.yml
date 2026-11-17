@@ -2,14 +2,14 @@
 # Тест роли base в контейнере: molecule создаёт контейнер с Debian 13 и systemd, применяет роль,
 # применяет её второй раз (ничего не должно измениться — idempotence) и проверяет результат (verify.yml).
 #
-# Запуск (нужны Docker и коллекции из requirements.yml — molecule ставит их сам):
+# Запуск (нужны Docker и коллекции из collections.yml — molecule ставит их сам):
 #   pip install -r requirements-molecule.txt
 #   cd ansible/roles/base && molecule test
 #
 # Роли по-прежнему пишутся только на модулях ansible.builtin. Коллекции (community.docker и
 # ansible.posix) нужны только самому molecule — чтобы создать контейнер и подключиться к нему.
 dependency:
-  name: galaxy   # коллекции — из requirements.yml рядом с этим файлом
+  name: galaxy   # коллекции — из collections.yml рядом с этим файлом
 
 driver:
   name: docker
@@ -39,6 +39,9 @@ platforms:
 
 provisioner:
   name: ansible
+  env:
+    # molecule не добавляет каталог ролей в путь поиска: роль base лежит в ansible/roles
+    ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..
   inventory:
     group_vars:
       all:
