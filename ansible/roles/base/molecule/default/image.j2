@@ -6,11 +6,12 @@ FROM ${BASE_IMAGE}
 
 ENV container=docker
 
-# Всё, что на настоящем сервере есть до Ansible: systemd, sshd, nftables, часовые пояса, Python
-# (для модулей Ansible) и python3-apt (для модуля apt)
+# Всё, что на настоящем сервере есть до Ansible: systemd, sshd, nftables, часовые пояса, sudo
+# (плейбук и converge.yml повышают права через become — как на сервере), Python (для модулей
+# Ansible) и python3-apt (для модуля apt)
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-       systemd systemd-sysv dbus python3 python3-apt openssh-server nftables tzdata \
+       systemd systemd-sysv dbus python3 python3-apt openssh-server nftables tzdata sudo \
     && rm -rf /var/lib/apt/lists/*
 
 # systemd завершается по этому сигналу, а не по SIGTERM
