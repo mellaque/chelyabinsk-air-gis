@@ -1,0 +1,5 @@
+# Molecule для теста ролей Ansible в контейнере (job «Ansible — molecule» в CI). Версии зафиксированы,
+# обновления раз в месяц предлагает Dependabot. ansible-core и ansible-lint — те же, что в CI-проверке.
+-r requirements-ansible.txt
+molecule==26.11.0
+molecule-plugins[docker]==26.11.0

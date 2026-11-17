@@ -1,0 +1,61 @@
+---
+# Тест роли base в контейнере: molecule создаёт контейнер с Debian 13 и systemd, применяет роль,
+# применяет её второй раз (ничего не должно измениться — idempotence) и проверяет результат (verify.yml).
+#
+# Запуск (нужны Docker и коллекции из requirements.yml — molecule ставит их сам):
+#   pip install -r requirements-molecule.txt
+#   cd ansible/roles/base && molecule test
+#
+# Роли по-прежнему пишутся только на модулях ansible.builtin. Коллекции (community.docker и
+# ansible.posix) нужны только самому molecule — чтобы создать контейнер и подключиться к нему.
+dependency:
+  name: galaxy   # коллекции — из requirements.yml рядом с этим файлом
+
+driver:
+  name: docker
+
+platforms:
+  - name: base-debian13
+    # Образ собирается из image.j2: в slim-образе Debian нет systemd, sshd, nft и часовых поясов,
+    # а роль настраивает именно их. Базовый образ закреплён по digest (аргумент сборки BASE_IMAGE);
+    # здесь — только имя собранного образа.
+    image: air-gis-molecule-debian13
+    dockerfile: image.j2
+    pre_build_image: false
+    buildargs:
+      BASE_IMAGE: debian:13-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
+    # PID 1 — systemd: роль включает юниты, маскирует sleep-таргеты, ставит таймер автоотката.
+    command: /sbin/init
+    # systemd в контейнере нужен доступ к cgroup, а nftables — право менять правила сети.
+    # Контейнер привилегированный: это одноразовый тестовый стенд в CI, а не сервер.
+    privileged: true
+    cgroupns_mode: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+
+provisioner:
+  name: ansible
+  inventory:
+    group_vars:
+      all:
+        # В плейбуке эти значения приходят из ansible/group_vars/all.yml; molecule его не читает.
+        # Роль base берёт их для правила firewall «порт node_exporter открыт только сети monitoring».
+        monitoring_subnet: 172.30.0.0/24
+        monitoring_node_exporter_port: 9100
+
+scenario:
+  name: default
+  # Как test_sequence по умолчанию, но без лишних шагов: prepare, side_effect и cleanup не нужны
+  test_sequence:
+    - dependency
+    - destroy
+    - syntax
+    - create
+    - converge
+    - idempotence
+    - verify
+    - destroy

@@ -1,0 +1,120 @@
+---
+# Проверка результата: не «задачи выполнились», а «система в нужном состоянии» — так, как её видят
+# сами программы (sshd -T, nft, systemctl), а не по содержимому файлов, которые положила роль.
+- name: Verify — роль base
+  hosts: all
+  gather_facts: false
+  become: true
+  vars_files:
+    - ../../defaults/main.yml   # те же списки пакетов и sleep-таргетов, что у роли
+  tasks:
+    - name: Установленные пакеты
+      ansible.builtin.package_facts:
+
+    - name: Все пакеты роли установлены
+      ansible.builtin.assert:
+        that: item in ansible_facts.packages
+        fail_msg: "Не установлен пакет {{ item }}"
+        quiet: true
+      loop: "{{ base_packages }}"
+
+    - name: Действующие настройки sshd
+      ansible.builtin.command:
+        cmd: /usr/sbin/sshd -T
+      register: base_verify_sshd
+      changed_when: false
+
+    - name: SSH — вход только по ключу, root не пускается
+      ansible.builtin.assert:
+        that:
+          - "'passwordauthentication no' in base_verify_sshd.stdout_lines"
+          - "'kbdinteractiveauthentication no' in base_verify_sshd.stdout_lines"
+          - "'permitrootlogin no' in base_verify_sshd.stdout_lines"
+        quiet: true
+
+    - name: Часовой пояс
+      ansible.builtin.stat:
+        path: /etc/localtime
+      register: base_verify_localtime
+
+    - name: Часовой пояс — ссылка на нужную зону
+      ansible.builtin.assert:
+        that:
+          - base_verify_localtime.stat.islnk
+          - base_verify_localtime.stat.lnk_source == '/usr/share/zoneinfo/' ~ base_timezone
+        quiet: true
+
+    - name: Автообновления — действующие настройки apt
+      ansible.builtin.command:
+        cmd: apt-config dump APT::Periodic
+      register: base_verify_apt_periodic
+      changed_when: false
+
+    - name: Автообновления включены
+      ansible.builtin.assert:
+        that:
+          - "'APT::Periodic::Update-Package-Lists \"1\";' in base_verify_apt_periodic.stdout_lines"
+          - "'APT::Periodic::Unattended-Upgrade \"1\";' in base_verify_apt_periodic.stdout_lines"
+        quiet: true
+
+    - name: Настройки logind с учётом всех файлов
+      ansible.builtin.command:
+        cmd: systemd-analyze cat-config systemd/logind.conf
+      register: base_verify_logind
+      changed_when: false
+
+    - name: Закрытая крышка не усыпляет
+      ansible.builtin.assert:
+        that:
+          - "'HandleLidSwitch=ignore' in base_verify_logind.stdout_lines"
+          - "'HandleLidSwitchExternalPower=ignore' in base_verify_logind.stdout_lines"
+          - "'HandleLidSwitchDocked=ignore' in base_verify_logind.stdout_lines"
+        quiet: true
+
+    # Модуль systemd_service без state ничего не меняет — только возвращает свойства юнита
+    - name: Состояние sleep-таргетов
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+      register: base_verify_sleep
+      loop: "{{ base_sleep_targets }}"
+
+    - name: Sleep-таргеты замаскированы
+      ansible.builtin.assert:
+        that: item.status.UnitFileState == 'masked'
+        fail_msg: "{{ item.item }}: {{ item.status.UnitFileState }}"
+        quiet: true
+      loop: "{{ base_verify_sleep.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Состояние юнитов firewall
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+      register: base_verify_firewall_unit
+      loop:
+        - host-firewall.service
+        - host-firewall-rollback.timer
+
+    # Таймер автоотката должен быть снят: иначе через base_firewall_rollback_seconds firewall выключится сам
+    - name: Firewall включён и запущен, таймер автоотката снят
+      ansible.builtin.assert:
+        that:
+          - base_verify_firewall_unit.results[0].status.UnitFileState == 'enabled'
+          - base_verify_firewall_unit.results[0].status.ActiveState == 'active'
+          - base_verify_firewall_unit.results[1].status.ActiveState | default('inactive') != 'active'
+        quiet: true
+
+    - name: Правила firewall, загруженные в ядро
+      ansible.builtin.command:
+        cmd: /usr/sbin/nft list table inet host_firewall
+      register: base_verify_nft
+      changed_when: false
+
+    - name: Firewall — по умолчанию всё запрещено, разрешено только нужное
+      ansible.builtin.assert:
+        that:
+          - base_verify_nft.stdout is search('hook input priority filter; policy drop;')
+          - base_verify_nft.stdout is search('udp dport ' ~ base_firewall_tailscale_port ~ ' accept')
+          - base_verify_nft.stdout is search('ip saddr 172.30.0.0/24 tcp dport 9100 accept')
+          - base_verify_nft.stdout is search('tcp dport 22 accept')
+        quiet: true
