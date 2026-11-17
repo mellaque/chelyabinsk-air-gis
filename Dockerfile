@@ -18,6 +18,14 @@ LABEL org.opencontainers.image.title="chelyabinsk-air-gis" \
       org.opencontainers.image.source="https://github.com/mellaque/chelyabinsk-air-gis" \
       org.opencontainers.image.licenses="MIT"
 
+# Временная заплатка до пересборки базового образа. Исправления musl (CVE-2026-107891) и zlib
+# (CVE-2026-85091) уже есть в репозитории Alpine, а образ nginx-unprivileged с ними ещё не вышел —
+# новый digest принести нечего. Обновляются только эти пакеты, остальное — как в базовом образе.
+# Когда Dependabot принесёт digest с исправленными пакетами, команда ничего не изменит — тогда
+# этот блок удалить (Trivy в Security покажет, нужен ли он ещё).
+USER 0
+RUN apk upgrade --no-cache musl musl-utils zlib
+
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY index.html /usr/share/nginx/html/
 COPY css/ /usr/share/nginx/html/css/
@@ -26,8 +34,8 @@ COPY vendor/ /usr/share/nginx/html/vendor/
 # Данные берём из первого этапа — то есть именно те, что прошли проверку
 COPY --from=validate /app/data/ /usr/share/nginx/html/data/
 
-# Базовый образ и так работает от пользователя nginx (UID 101); указываем явно —
-# так видно из Dockerfile и так ожидают сканеры (Trivy DS-0002)
+# Работаем от пользователя nginx (UID 101), как в базовом образе: выше для обновления пакетов
+# понадобился root. Указано явно — так видно из Dockerfile и так ожидают сканеры (Trivy DS-0002)
 USER 101
 
 EXPOSE 8080
