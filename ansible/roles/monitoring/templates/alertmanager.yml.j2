@@ -6,6 +6,13 @@ route:
   group_interval: {{ monitoring_alert_group_interval }}
   repeat_interval: {{ monitoring_alert_repeat_interval }}
   routes:
+    # Сигнал «мониторинг работает» — внешнему сервису, а не в ntfy. Повтор проверяется раз в
+    # group_interval, поэтому сигнал уходит примерно каждые {{ monitoring_heartbeat_interval }}
+    - matchers: ['alertname="Watchdog"']
+      receiver: heartbeat
+      group_wait: 0s
+      group_interval: 1m
+      repeat_interval: {{ monitoring_heartbeat_interval }}
     # О критичном напоминаем чаще
     - matchers: ['severity="critical"']
       repeat_interval: {{ monitoring_alert_repeat_interval_critical }}
@@ -13,8 +20,8 @@ route:
     - matchers: ['severity="info"']
       receiver: ntfy-firing-only
 
-# Адрес канала ntfy — в отдельном файле (url_file): его нет ни здесь, ни на странице Status,
-# и читается он при каждой отправке — после замены файла перезапуск не нужен.
+# Адреса — в отдельных файлах (url_file): их нет ни здесь, ни на странице Status,
+# и читаются они при каждой отправке — после замены файла перезапуск не нужен.
 receivers:
   - name: ntfy
     webhook_configs:
@@ -23,6 +30,11 @@ receivers:
   - name: ntfy-firing-only
     webhook_configs:
       - url_file: /run/secrets/ntfy-url
+        send_resolved: false
+  # Внешнему сервису важен сам факт запроса; что алерт «исправлен», ему знать незачем
+  - name: heartbeat
+    webhook_configs:
+      - url_file: /run/secrets/heartbeat-url
         send_resolved: false
 
 # Подавление: пока активен алерт-источник, алерт-цель с теми же метками из equal не отправляется

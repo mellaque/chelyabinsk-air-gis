@@ -296,7 +296,7 @@ GitHub показывает их как Verified, а GitLab и GitVerse — ка
 │   ├── roles/docker/           # роль: Docker CE и Compose из репозитория Docker, ротация журналов контейнеров
 │   ├── roles/app/              # роль: проверка подписи образа (cosign) и запуск сайта по digest
 │   ├── roles/proxy/            # роль: обратный прокси Caddy, HTTPS с собственным центром сертификации
-│   ├── roles/monitoring/       # роль: Prometheus, node_exporter, cAdvisor, blackbox_exporter (проверки сайта по HTTPS), метрики Caddy, Grafana с дашбордами из файлов, правила алертов с тестами, Alertmanager с уведомлениями в ntfy
+│   ├── roles/monitoring/       # роль: Prometheus, node_exporter, cAdvisor, blackbox_exporter (проверки сайта по HTTPS), метрики Caddy, Grafana с дашбордами из файлов, правила алертов с тестами, Alertmanager с уведомлениями в ntfy и сигналом внешнему «будильнику»
 │   └── vault.example.yml       # образец файла с секретами (настоящий — вне репозитория)
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных
