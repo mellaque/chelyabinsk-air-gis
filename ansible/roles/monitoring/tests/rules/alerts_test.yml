@@ -124,6 +124,18 @@ tests:
               summary: "Prometheus не может опросить cadvisor (cadvisor:8080)"
               description: "Метрики не собираются 2 минуты. Смотреть: docker ps -a на сервере и журнал контейнера."
 
+  - name: Watchdog активен всегда — даже когда нет ни одной метрики
+    interval: 30s
+    alert_rule_test:
+      - eval_time: 0m
+        alertname: Watchdog
+        exp_alerts:
+          - exp_labels:
+              severity: none
+            exp_annotations:
+              summary: "Сигнал «мониторинг работает»"
+              description: "Активен всегда — так и должно быть. Тревогу поднимает внешний сервис, если сигнал перестал приходить."
+
   - name: Alertmanager не смог отправить уведомление — алерт сразу; счётчик стоит — алерта нет
     interval: 30s
     input_series:

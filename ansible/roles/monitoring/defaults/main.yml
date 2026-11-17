@@ -126,3 +126,11 @@ monitoring_ntfy_message: !unsafe >-
 monitoring_ntfy_priority: !unsafe >-
   {{if eq .status "resolved"}}default{{else if eq .commonLabels.severity "critical"}}high{{else if
   eq .commonLabels.severity "info"}}low{{else}}default{{end}}
+
+# Внешний «будильник» (dead man's switch): сервис вне сервера, который ждёт регулярный сигнал
+# и сам сообщает, когда тот перестал приходить, — например Better Stack или healthchecks.io. Адрес для сигналов —
+# из файла с секретами (vault.example.yml): кто его знает, может слать сигналы вместо сервера.
+monitoring_heartbeat_url: "{{ vault_heartbeat_url }}"
+# Как часто отправлять сигнал. В сервисе период ожидания должен быть не меньше:
+# для 4m — период 5 минут и ещё 5 минут запаса (grace), тревога через 10 минут тишины.
+monitoring_heartbeat_interval: 4m

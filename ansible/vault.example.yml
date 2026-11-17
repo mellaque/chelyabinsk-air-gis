@@ -16,3 +16,7 @@ vault_grafana_admin_password: "заменить"
 # Адрес канала ntfy для уведомлений Alertmanager (имя канала — секрет: кто его знает, тот читает и пишет)
 # Только адрес канала, без параметров: https://ntfy.sh/имя-канала
 vault_ntfy_topic_url: "https://ntfy.sh/заменить"
+
+# Адрес внешнего «будильника» (heartbeat URL в Better Stack, ping URL в healthchecks.io и т. п.): Alertmanager
+# шлёт туда запрос POST каждые несколько минут, а сервис сообщает, если запросы прекратились
+vault_heartbeat_url: "https://example.com/заменить"
