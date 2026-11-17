@@ -230,6 +230,12 @@ sh scripts/sync_mirrors.sh --check   # только показать расхо�
 sh scripts/sync_mirrors.sh           # синхронизировать
 ```
 
+CI на зеркалах: у GitLab свой [`.gitlab-ci.yml`](.gitlab-ci.yml), а GitVerse запускает те же файлы
+из `.github/workflows/` на своих раннерах. Там нет API GitHub, Docker, GHCR и Pages, поэтому шаги и jobs,
+которым это нужно (сборка образов, Trivy, CodeQL, публикация, онлайн-проверки zizmor), выполняются
+только на github.com — условие `github.server_url == 'https://github.com'`. На GitVerse остаются линтеры
+(zizmor в режиме `--offline`), ansible-lint, тесты, проверка данных и фронтенда.
+
 Зеркала — только для чтения: то, что запушено прямо в них, будет перезаписано, как при
 `git push --mirror`. Если с GitHub не пришло ни одной ветки, скрипт ничего не трогает; локальные
 ветки и теги на зеркала не попадают; два запуска одновременно не идут. Тесты — на локальных

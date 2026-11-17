@@ -6,6 +6,10 @@
 #
 # Еженедельный запуск по расписанию нужен потому, что новые уязвимости публикуются постоянно:
 # образ, вчера чистый, сегодня может оказаться уязвимым без единого изменения в коде.
+#
+# Оба jobs — только на github.com: отчёты загружаются во вкладку Security самого GitHub, CodeQL
+# работает только там, а для образов нужен Docker. Зеркало на GitVerse этот файл тоже читает —
+# там jobs пропускаются (условие github.server_url).
 name: Security
 
 on:
@@ -26,6 +30,7 @@ concurrency:
 jobs:
   trivy:
     name: Trivy — репозиторий и образы
+    if: github.server_url == 'https://github.com'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -103,6 +108,7 @@ jobs:
 
   codeql:
     name: CodeQL — ${{ matrix.language }}
+    if: github.server_url == 'https://github.com'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:

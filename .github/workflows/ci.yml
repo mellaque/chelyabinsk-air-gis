@@ -2,6 +2,11 @@
 #   Pull request      → проверки (lint, ansible, python, data, frontend, docker). Красный PR не мержим.
 #   Push в main       → те же проверки, затем публикация образов в GHCR и сайта на GitHub Pages.
 #   Тег vX.Y.Z        → проверки и образы с номером версии (например, :2.0.0 и :2.0).
+#
+# Этот же файл запускает зеркало на GitVerse (его раннеры читают .github/workflows). Там нет ни API
+# GitHub, ни Docker, ни GHCR и Pages, поэтому такие шаги и jobs выполняются только на github.com
+# (условие github.server_url == 'https://github.com'). На зеркале остаются проверки, которым ничего
+# этого не нужно: линтеры, ansible-lint, тесты, данные, фронтенд. У GitLab свой CI — .gitlab-ci.yml.
 name: CI
 
 on:
@@ -40,10 +45,16 @@ jobs:
         run: actionlint
 
       - name: zizmor — безопасность workflow и настроек Dependabot
+        if: github.server_url == 'https://github.com'
         env:
           # токен только на чтение: онлайн-проверки (уязвимые версии actions, подменённые коммиты)
           GH_TOKEN: ${{ github.token }}
         run: zizmor --format=github .
+
+      # Вне GitHub токен для его API не выдаётся: онлайн-проверки там падают с 401
+      - name: zizmor — без обращений к API GitHub (зеркало)
+        if: github.server_url != 'https://github.com'
+        run: zizmor --offline --format=github .
 
       - name: shellcheck — скрипты
         run: shellcheck scripts/*.sh
@@ -74,7 +85,9 @@ jobs:
       # promtool запускается из того же образа Prometheus, что работает на сервере (digest — в роли
       # monitoring). Тесты подают на вход придуманные метрики и проверяют, когда алерты срабатывают:
       # правило с опечаткой в имени метрики синтаксически верно, но не сработало бы никогда
+      # Нужен Docker — на зеркале GitVerse его нет (на GitLab это отдельный job alert-rules)
       - name: Правила алертов Prometheus — синтаксис и тесты (promtool)
+        if: github.server_url == 'https://github.com'
         run: sh scripts/test_alert_rules.sh
 
       # Секреты хранятся вне репозитория (ansible/vault.example.yml). Файл или значение, зашифрованные
@@ -165,6 +178,7 @@ jobs:
 
   docker:
     name: Docker — сборка и smoke-тест
+    if: github.server_url == 'https://github.com'    # на зеркале GitVerse нет Docker
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -253,7 +267,8 @@ jobs:
   publish-images:
     name: Публикация образа ${{ matrix.image }} в GHCR
     needs: [python, data, frontend, docker]
-    if: github.event_name == 'push'
+    # Публикует только GitHub: зеркала — копии, своих образов и сайта у них нет
+    if: github.event_name == 'push' && github.server_url == 'https://github.com'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # Публикации одного образа — по очереди: если тег vX.Y.Z поставлен сразу после мержа,
@@ -381,7 +396,7 @@ jobs:
   pages:
     name: Публикация сайта на GitHub Pages
     needs: [python, data, frontend, docker]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.server_url == 'https://github.com'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
