@@ -157,6 +157,7 @@ python scripts/validate_data.py
 |---|---|
 | **Линтеры** | actionlint и [zizmor](https://docs.zizmor.sh/) проверяют workflow GitHub Actions (синтаксис, выражения, безопасность, известные уязвимости в actions), shellcheck — shell-скрипты; версии — в `requirements-lint.txt` |
 | **Ansible** | ansible-lint (профиль production) проверяет каталог `ansible/`: плейбук, роли, инвентарь; отдельный шаг следит, чтобы в репозиторий не попали файлы ansible-vault; правила алертов Prometheus проверяются тестами (`promtool test rules` из того же образа, что на сервере); версии — в `requirements-ansible.txt` |
+| **Ansible — molecule** | роль `base` применяется в контейнере с Debian 13 и systemd: дважды (второй прогон не должен ничего менять), затем проверяется итог — действующие настройки `sshd -T`, правила `nft`, состояние юнитов systemd; версии — в `requirements-molecule.txt` |
 | **Ruff** | стиль кода и типичные ошибки в Python |
 | **pytest** (Python 3.12 и 3.14) | тесты обработки NetCDF → JSON и проверки данных на синтетических файлах; тесты загрузчика на локальном «фальшивом NASA» (каталог, авторизация, редирект без утечки токена, докачка, повторы); тесты синхронизации зеркал на локальных git-репозиториях |
 | **Проверка данных** | `scripts/validate_data.py`: все `data/*.json` в актуальном формате, размерности совпадают, нет NaN и отрицательных значений, у проверенных данных указан источник, в `region.geojson` нет битой кодировки |
@@ -386,6 +387,7 @@ ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault
 │   ├── group_vars/all.yml      # версия сайта на сервере (digest образа), подсеть сети мониторинга
 │   ├── playbook.yml            # плейбук
 │   ├── roles/base/             # роль: пакеты, SSH только по ключу, автообновления, часовой пояс, запрет сна, firewall
+│   │   └── molecule/default/   # тест роли в контейнере (molecule): применение, повторный прогон, проверки
 │   ├── roles/docker/           # роль: Docker CE и Compose из репозитория Docker, ротация журналов контейнеров
 │   ├── roles/app/              # роль: проверка подписи образа (cosign) и запуск сайта по digest
 │   ├── roles/proxy/            # роль: обратный прокси Caddy, HTTPS с собственным центром сертификации
@@ -394,7 +396,7 @@ ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных
 ├── SECURITY.md                 # как сообщить об уязвимости, меры безопасности, проверка подписи
-├── requirements*.txt           # версии Python-пакетов: пайплайн, разработка, линтеры, Ansible
+├── requirements*.txt           # версии Python-пакетов: пайплайн, разработка, линтеры, Ansible, molecule
 ├── .gitlab-ci.yml              # CI для зеркала на GitLab
 ├── .github/
 │   ├── workflows/ci.yml        # CI/CD: проверки, публикация образов и сайта
@@ -464,7 +466,8 @@ ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault
 - [x] Безопасность цепочки поставок: Trivy, CodeQL, подпись образов, SBOM, закрепление actions
 - [x] Деплой контейнера на сервер: Ansible, обратный прокси с HTTPS, проверка подписи образа — см. [Деплой на сервер](#деплой-на-сервер)
 - [x] Мониторинг и алерты: Prometheus, Grafana, Alertmanager, тесты правил — см. [Мониторинг и алерты](#мониторинг-и-алерты)
-- [ ] Тесты ролей Ansible (molecule) и сценарий восстановления сервера с нуля
+- [x] Тест роли base в контейнере (molecule) — в CI при каждом pull request
+- [ ] Тесты остальных ролей и сценарий восстановления сервера с нуля
 - [x] Автоматическая загрузка данных с NASA Earthdata
 - [x] CO, O₃ и H₂O из реанализа TCR-2 вместо непроверенных данных MLS из версии ВКР
 - [x] NO₂, SO₂ и формальдегид из того же реанализа

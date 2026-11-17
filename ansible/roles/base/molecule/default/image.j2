@@ -1,0 +1,20 @@
+# Molecule: образ для теста роли base — Debian 13 с systemd в роли PID 1.
+# Не «Dockerfile», чтобы его не считали Dockerfile проекта (hadolint, Trivy): это тестовый стенд,
+# он работает от root и без healthcheck намеренно.
+ARG BASE_IMAGE
+FROM ${BASE_IMAGE}
+
+ENV container=docker
+
+# Всё, что на настоящем сервере есть до Ansible: systemd, sshd, nftables, часовые пояса, sudo
+# (плейбук и converge.yml повышают права через become — как на сервере), iproute2 (без команды ip
+# Ansible не соберёт сетевые факты, а firewall берёт из них подсеть для SSH), Python (для модулей
+# Ansible) и python3-apt (для модуля apt)
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+       systemd systemd-sysv dbus python3 python3-apt openssh-server nftables tzdata sudo iproute2 \
+    && rm -rf /var/lib/apt/lists/*
+
+# systemd завершается по этому сигналу, а не по SIGTERM
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]

@@ -6,7 +6,7 @@ base_timezone: Asia/Yekaterinburg
 base_packages:
   - ca-certificates
   - curl
-  - dnsutils
+  - bind9-dnsutils   # dig и nslookup; «dnsutils» в Debian 13 — только виртуальное имя этого пакета
   - git
   - htop
   - tmux
