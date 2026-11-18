@@ -71,9 +71,10 @@ monitoring_cadvisor_labels:
 monitoring_cadvisor_memory_limit: 192m
 
 # compose.yaml обратного прокси и путь к корневому сертификату его центра сертификации
-# внутри контейнера (каталог тот же, что proxy_dir в роли proxy)
+# внутри контейнера (каталоги те же, что proxy_dir и proxy_ca_container_dir в роли proxy).
+# Не из тома /data: если корень задан в конфигурации, Caddy в том его не записывает
 monitoring_proxy_compose_file: /opt/proxy/compose.yaml
-monitoring_proxy_root_cert: /data/caddy/pki/authorities/local/root.crt
+monitoring_proxy_root_cert: /etc/caddy-ca/root.crt
 
 # Ограничения контейнеров
 monitoring_prometheus_memory_limit: 768m
