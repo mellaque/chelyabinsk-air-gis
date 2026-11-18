@@ -8,7 +8,7 @@
 #   ansible-vault edit ~/.config/air-gis/vault.yml
 #   ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault-pass
 #
-# Значения ниже — заглушки: с ними роль monitoring не запустится.
+# Значения ниже — заглушки: с ними роли proxy и monitoring не запустятся.
 
 # Пароль администратора Grafana
 vault_grafana_admin_password: "заменить"
@@ -20,3 +20,21 @@ vault_ntfy_topic_url: "https://ntfy.sh/заменить"
 # Адрес внешнего «будильника» (heartbeat URL в Better Stack, ping URL в healthchecks.io и т. п.): Alertmanager
 # шлёт туда запрос POST каждые несколько минут, а сервис сообщает, если запросы прекратились
 vault_heartbeat_url: "https://example.com/заменить"
+
+# Корень центра сертификации обратного прокси (Caddy) — сертификат и ключ в PEM. Ключ — главный секрет
+# файла: кто его знает, выпустит сертификат на любое имя, которому поверят устройства с этим корнем.
+# Корень хранится здесь, а не генерируется на сервере: после переустановки сервера сертификаты
+# по-прежнему подписаны им, и устройства им доверяют. Новый корень (ECDSA P-256, 10 лет):
+#   openssl ecparam -name prime256v1 -genkey -noout -out root.key
+#   openssl req -x509 -new -key root.key -sha256 -days 3650 -subj "/CN=Home Lab Root CA" \
+#     -addext "basicConstraints=critical,CA:TRUE" -addext "keyUsage=critical,keyCertSign,cRLSign" -out root.crt
+# Содержимое файлов вставить с отступом в два пробела, затем удалить файлы. Корневой сертификат
+# (root.crt) поставить в доверенные на устройствах.
+vault_caddy_root_cert: |
+  -----BEGIN CERTIFICATE-----
+  заменить
+  -----END CERTIFICATE-----
+vault_caddy_root_key: |
+  -----BEGIN EC PRIVATE KEY-----
+  заменить
+  -----END EC PRIVATE KEY-----

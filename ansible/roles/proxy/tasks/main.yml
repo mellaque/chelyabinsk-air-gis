@@ -2,6 +2,23 @@
 # Обратный прокси Caddy: HTTPS с сертификатами собственного центра сертификации, единственная
 # точка входа веб-трафика. Сайты находит по именам контейнеров в общих сетях Docker.
 
+# Значения не выводятся: при ошибке видно только, какое из условий не выполнено.
+# Что ключ подходит к сертификату, проверяет сам Caddy при загрузке конфигурации.
+- name: Корень центра сертификации задан
+  ansible.builtin.assert:
+    that:
+      - vault_caddy_root_cert is defined
+      - vault_caddy_root_key is defined
+      - proxy_ca_root_cert is search('-----BEGIN CERTIFICATE-----')
+      - proxy_ca_root_key is search('-----BEGIN (EC |RSA )?PRIVATE KEY-----')
+      - "'заменить' not in proxy_ca_root_cert"
+      - "'заменить' not in proxy_ca_root_key"
+    fail_msg: >-
+      В файле с секретами нужны vault_caddy_root_cert и vault_caddy_root_key в PEM
+      (образец и как их получить — vault.example.yml):
+      ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault-pass
+    quiet: true
+
 - name: Каталог конфигурации
   ansible.builtin.file:
     path: "{{ proxy_dir }}/conf"
@@ -9,6 +26,36 @@
     owner: root
     group: root
     mode: "0755"
+
+# Каталог монтируется в контейнер целиком (не отдельные файлы): Caddy читает корень при каждой
+# загрузке конфигурации, а заменённый Ansible файл в примонтированном файле был бы не виден.
+# Caddy в контейнере работает от root — ему и только ему доступны файлы.
+- name: Каталог корня центра сертификации
+  ansible.builtin.file:
+    path: "{{ proxy_dir }}/ca"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Корневой сертификат центра сертификации
+  ansible.builtin.copy:
+    content: "{{ proxy_ca_root_cert | trim }}\n"
+    dest: "{{ proxy_dir }}/ca/root.crt"
+    owner: root
+    group: root
+    mode: "0444"
+  notify: Перечитать конфигурацию Caddy
+
+- name: Ключ корня центра сертификации
+  ansible.builtin.copy:
+    content: "{{ proxy_ca_root_key | trim }}\n"
+    dest: "{{ proxy_dir }}/ca/root.key"
+    owner: root
+    group: root
+    mode: "0400"
+  no_log: true   # иначе ключ попал бы в вывод и в diff
+  notify: Перечитать конфигурацию Caddy
 
 # Перед заменой синтаксис проверяет сам Caddy из того же образа
 - name: Caddyfile
