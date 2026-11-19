@@ -11,6 +11,9 @@
     fail_msg: "app_image_digest должен иметь вид sha256:<64 шестнадцатеричных символа> (group_vars/all.yml)"
     quiet: true
 
+# Таймаут и повторы: у get_url по умолчанию 10 с на соединение и ни одной повторной попытки, а
+# рукопожатие TLS с GitHub на медленной линии (или в эмулируемой ВМ) бывает дольше. Повтор безопасен:
+# файл проверяется по checksum, недокачанный не будет установлен.
 - name: Установлен cosign
   ansible.builtin.get_url:
     url: "https://github.com/sigstore/cosign/releases/download/{{ app_cosign_version }}/cosign-linux-amd64"
@@ -19,6 +22,11 @@
     owner: root
     group: root
     mode: "0755"
+    timeout: 60
+  register: app_cosign_download
+  until: app_cosign_download is succeeded
+  retries: 4
+  delay: 15
 
 - name: Есть ли cosign на сервере
   ansible.builtin.stat:

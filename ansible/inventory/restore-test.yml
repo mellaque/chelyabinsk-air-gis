@@ -1,0 +1,9 @@
+---
+# Тестовый стенд для проверки сценария восстановления сервера с нуля (docs/runbook-restore.md):
+# чистая ВМ с Debian 13 x86_64. Как и в hosts.yml, здесь только SSH-алиас — адрес и логин в ~/.ssh/config.
+# Запуск — с отдельным файлом секретов (свои каналы уведомлений), чтобы стенд не писал в рабочие:
+#   ansible-playbook playbook.yml -i inventory/restore-test.yml -K -e @$HOME/.config/air-gis/vault-test.yml --ask-vault-pass
+all:
+  hosts:
+    restore-test:
+      ansible_python_interpreter: /usr/bin/python3

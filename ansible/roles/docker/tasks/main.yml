@@ -19,6 +19,12 @@
     owner: root
     group: root
     mode: "0644"
+    # Таймаут и повторы — как у загрузки cosign в роли app: медленная линия не должна ронять прогон
+    timeout: 60
+  register: docker_apt_key_download
+  until: docker_apt_key_download is succeeded
+  retries: 4
+  delay: 15
 
 # Signed-By привязывает ключ только к этому репозиторию: пакеты Debian им подписать нельзя
 - name: Репозиторий Docker
