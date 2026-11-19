@@ -299,6 +299,9 @@ ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault
 ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault-pass                  # применить
 ```
 
+Восстановление сервера с нуля — что хранится вне сервера, ручные шаги, проверки и время — описано
+в [runbook](docs/runbook-restore.md); сценарий проверен на чистой ВМ.
+
 ### Мониторинг и алерты
 
 | Компонент | Зачем |
@@ -384,6 +387,7 @@ ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault
 ├── ansible/                    # настройка сервера и деплой (Ansible)
 │   ├── ansible.cfg             # настройки: инвентарь, формат вывода
 │   ├── inventory/hosts.yml     # сервер — только SSH-алиас, без адресов и логинов
+│   ├── inventory/restore-test.yml # тестовый стенд для проверки восстановления с нуля
 │   ├── group_vars/all.yml      # версия сайта на сервере (digest образа), подсеть сети мониторинга
 │   ├── playbook.yml            # плейбук
 │   ├── roles/base/             # роль: пакеты, SSH только по ключу, автообновления, часовой пояс, запрет сна, firewall
@@ -395,6 +399,7 @@ ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault
 │   └── vault.example.yml       # образец файла с секретами (настоящий — вне репозитория)
 ├── tests/                      # pytest
 ├── docs/data-format.md         # описание формата данных
+├── docs/runbook-restore.md     # восстановление сервера с нуля
 ├── SECURITY.md                 # как сообщить об уязвимости, меры безопасности, проверка подписи
 ├── requirements*.txt           # версии Python-пакетов: пайплайн, разработка, линтеры, Ansible, molecule
 ├── .gitlab-ci.yml              # CI для зеркала на GitLab
@@ -467,7 +472,8 @@ ansible-playbook playbook.yml -K -e @$HOME/.config/air-gis/vault.yml --ask-vault
 - [x] Деплой контейнера на сервер: Ansible, обратный прокси с HTTPS, проверка подписи образа — см. [Деплой на сервер](#деплой-на-сервер)
 - [x] Мониторинг и алерты: Prometheus, Grafana, Alertmanager, тесты правил — см. [Мониторинг и алерты](#мониторинг-и-алерты)
 - [x] Тест роли base в контейнере (molecule) — в CI при каждом pull request
-- [ ] Тесты остальных ролей и сценарий восстановления сервера с нуля
+- [x] Сценарий восстановления сервера с нуля, проверенный на чистой ВМ — см. [runbook](docs/runbook-restore.md)
+- [ ] Тесты остальных ролей в molecule
 - [x] Автоматическая загрузка данных с NASA Earthdata
 - [x] CO, O₃ и H₂O из реанализа TCR-2 вместо непроверенных данных MLS из версии ВКР
 - [x] NO₂, SO₂ и формальдегид из того же реанализа

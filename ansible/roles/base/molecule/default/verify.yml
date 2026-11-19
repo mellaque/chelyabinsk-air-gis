@@ -114,7 +114,8 @@
       ansible.builtin.assert:
         that:
           - base_verify_nft.stdout is search('hook input priority filter; policy drop;')
-          - base_verify_nft.stdout is search('udp dport ' ~ base_firewall_tailscale_port ~ ' accept')
+          - base_verify_nft.stdout is search('udp dport ' ~ base_firewall_vpn_udp_port ~ ' accept')
+          - base_verify_nft.stdout is search('iifname "' ~ base_firewall_vpn_interface ~ '" accept')
           - base_verify_nft.stdout is search('ip saddr 172.30.0.0/24 tcp dport 9100 accept')
           - base_verify_nft.stdout is search('tcp dport 22 accept')
         quiet: true

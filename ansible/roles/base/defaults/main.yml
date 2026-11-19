@@ -20,7 +20,8 @@ base_sleep_targets:
   - hybrid-sleep.target
 
 # Firewall. Откуда разрешён SSH: по умолчанию — подсеть основного интерфейса (локальная сеть),
-# она берётся из фактов, поэтому адресов в репозитории нет. Из tailnet SSH разрешён всегда.
+# она берётся из фактов, поэтому адресов в репозитории нет. Из VPN SSH разрешён всегда
+# (правило для интерфейса VPN ниже).
 base_firewall_ssh_sources:
   - "{{ ansible_facts['default_ipv4']['network'] }}/{{ ansible_facts['default_ipv4']['prefix'] }}"
 
@@ -32,8 +33,10 @@ base_firewall_tcp_rules:
     source: "{{ monitoring_subnet }}"
     port: "{{ monitoring_node_exporter_port }}"
 
-# UDP-порт Tailscale (WireGuard)
-base_firewall_tailscale_port: 41641
+# VPN: UDP-порт для прямых соединений между узлами и интерфейс туннеля. Всё, что пришло
+# из туннеля, разрешено: кто может подключаться, решают правила доступа самого VPN.
+base_firewall_vpn_udp_port: 41641
+base_firewall_vpn_interface: tailscale0
 
 # Через сколько секунд firewall отключится сам, если после применения правил не удалось подключиться по SSH
 base_firewall_rollback_seconds: 180

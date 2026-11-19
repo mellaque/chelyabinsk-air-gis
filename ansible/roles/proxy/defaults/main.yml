@@ -23,34 +23,32 @@ proxy_networks:
   - name: monitoring
     site_aliases: true
 
-# Адреса Tailscale: устройства tailnet получают IPv4 из 100.64.0.0/10 (CGNAT, RFC 6598)
-# и IPv6 из префикса Tailscale
-proxy_tailnet_sources:
+# Адреса устройств в VPN: IPv4 из 100.64.0.0/10 (RFC 6598) и IPv6-префикс сети VPN
+proxy_vpn_sources:
   - 100.64.0.0/10
   - fd7a:115c:a1e0::/48
 
 # Сайты: имя → контейнер в общей сети. Домен home.arpa зарезервирован для домашних сетей (RFC 8375).
 # allowed_sources — с каких адресов сайт доступен; остальным прокси отвечает 403.
-# У Prometheus и Alertmanager нет своей авторизации, поэтому они открыты только устройствам tailnet.
+# У Prometheus и Alertmanager нет своей авторизации, поэтому они открыты только устройствам VPN.
 #
-# Условие для allowed_sources с адресами tailnet: Tailscale на сервере не должен подменять адрес
-# источника. По умолчанию он делает это для всех пакетов, пересылаемых с tailscale0 (в том числе
-# в контейнеры), и прокси видит адрес шлюза сети Docker — тогда 403 получают все. Настройка
-# выполняется один раз вручную (Tailscale этим плейбуком не управляется):
-#   sudo tailscale set --snat-subnet-routes=false
-# Серверу, который раздаёт подсети (subnet router), она не подходит.
+# Условие для allowed_sources с адресами VPN: VPN-клиент на сервере не должен подменять адрес
+# источника (SNAT) у пакетов, которые он пересылает из туннеля, в том числе в контейнеры. Иначе прокси
+# видит адрес шлюза сети Docker, и 403 получают все. VPN этим плейбуком не настраивается — это ручной
+# шаг, см. docs/runbook-restore.md (шаг 5). Адрес шлюза Docker в список не добавлять: это открыло бы
+# сайты всем, чей адрес подменён.
 proxy_sites:
   - host: air-gis.home.arpa
     upstream: air-gis:8080
   - host: prometheus.home.arpa
     upstream: prometheus:9090
-    allowed_sources: "{{ proxy_tailnet_sources }}"
+    allowed_sources: "{{ proxy_vpn_sources }}"
   - host: alertmanager.home.arpa
     upstream: alertmanager:9093
-    allowed_sources: "{{ proxy_tailnet_sources }}"
+    allowed_sources: "{{ proxy_vpn_sources }}"
   - host: grafana.home.arpa
     upstream: grafana:3000
-    allowed_sources: "{{ proxy_tailnet_sources }}"
+    allowed_sources: "{{ proxy_vpn_sources }}"
 
 # Метрики Caddy для Prometheus (число и длительность запросов по сайтам, состояние upstream).
 # Отдаются по HTTP на отдельном порту, который на хосте не публикуется: он виден только из сетей
