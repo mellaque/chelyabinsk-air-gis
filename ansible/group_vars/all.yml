@@ -12,7 +12,7 @@ app_image_digest: sha256:012d2532e822079e6124355ad1cc8312bafb614fed08cf447b63cdc
 #   docker     — создаёт сеть с этой подсетью;
 #   base       — открывает в firewall порт node_exporter только для неё;
 #   monitoring — node_exporter слушает адрес шлюза этой сети, Prometheus опрашивает его там же.
-# Диапазон 172.16.0.0/12 — частный (RFC 1918); в локальной сети и в tailnet таких адресов нет.
+# Диапазон 172.16.0.0/12 — частный (RFC 1918); в локальной сети и в VPN таких адресов нет.
 monitoring_subnet: 172.30.0.0/24
 monitoring_gateway: 172.30.0.1
 monitoring_node_exporter_port: 9100

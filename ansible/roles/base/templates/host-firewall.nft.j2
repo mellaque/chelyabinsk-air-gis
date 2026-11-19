@@ -2,7 +2,7 @@
 # Firewall хоста. Файл создаёт Ansible (роль base) — правки вручную будут перезаписаны.
 #
 # Отдельная таблица, а не общий /etc/nftables.conf: тот начинается с «flush ruleset» и стёр бы
-# правила, которые Docker и Tailscale держат в своих таблицах. Здесь очищается только своя таблица.
+# правила, которые Docker и VPN-клиент держат в своих таблицах. Здесь очищается только своя таблица.
 # Три строки ниже — «создать, если нет → удалить → описать заново»; файл применяется одной
 # транзакцией, поэтому момента без правил не бывает.
 #
@@ -22,9 +22,10 @@ table inet host_firewall {
 		# ICMP: ping и служебные сообщения; для IPv6 без них не работает обнаружение соседей
 		meta l4proto { icmp, ipv6-icmp } accept
 
-		# Tailscale: UDP-порт WireGuard и всё, что пришло уже из туннеля (доступ задаётся ACL tailnet)
-		udp dport {{ base_firewall_tailscale_port }} accept
-		iifname "tailscale0" accept
+		# VPN: UDP-порт для прямых соединений и всё, что пришло уже из туннеля
+		# (кто может подключаться, решают правила доступа самого VPN)
+		udp dport {{ base_firewall_vpn_udp_port }} accept
+		iifname "{{ base_firewall_vpn_interface }}" accept
 
 		# SSH из локальной сети
 {% for source in base_firewall_ssh_sources %}

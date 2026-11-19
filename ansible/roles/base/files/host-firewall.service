@@ -1,6 +1,6 @@
 # Загружает таблицу nftables «inet host_firewall» из /etc/host-firewall.nft.
 # Свой юнит, а не nftables.service: тот при остановке и перезапуске выполняет «nft flush ruleset»
-# и стирает заодно правила Docker и Tailscale. Этот убирает только свою таблицу.
+# и стирает заодно правила Docker и VPN-клиента. Этот убирает только свою таблицу.
 [Unit]
 Description=Host firewall (nftables table inet host_firewall)
 Documentation=man:nft(8)
