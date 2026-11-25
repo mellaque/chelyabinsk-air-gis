@@ -1,0 +1,65 @@
+---
+# Тест роли docker в контейнере: molecule создаёт контейнер с Debian 13 и systemd, роль ставит в него
+# настоящий Docker CE из репозитория Docker и запускает свой dockerd (Docker в Docker), затем — второй
+# прогон (ничего не должно измениться — idempotence) и проверки (verify.yml).
+#
+# Запуск (нужны Docker и коллекции из collections.yml — molecule ставит их сам):
+#   pip install -r requirements-molecule.txt
+#   cd ansible/roles/docker && molecule test
+#
+# Устроен так же, как сценарий роли base (ansible/roles/base/molecule/default).
+dependency:
+  name: galaxy   # коллекции — из collections.yml рядом с этим файлом
+
+driver:
+  name: docker
+
+platforms:
+  - name: docker-debian13
+    image: air-gis-molecule-docker-debian13
+    dockerfile: image.j2
+    pre_build_image: false
+    buildargs:
+      # Digest индекса: годится и для amd64 (CI), и для arm64 (Mac)
+      BASE_IMAGE: debian:13-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
+    command: /sbin/init
+    # systemd нужен доступ к cgroup; внутреннему dockerd — права на сети, мосты и правила iptables.
+    # Контейнер привилегированный: это одноразовый тестовый стенд, а не сервер.
+    privileged: true
+    cgroupns_mode: host
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      # Корень контейнера — overlayfs, а overlay поверх overlay ядро не умеет. Хранилища внутреннего
+      # Docker (образы — в snapshotter containerd, остальное — в /var/lib/docker) выносим в анонимные
+      # тома: это обычные каталоги на диске хоста. molecule destroy удаляет их вместе с контейнером.
+      - /var/lib/docker
+      - /var/lib/containerd
+    tmpfs:
+      - /run
+      - /run/lock
+      - /tmp
+
+provisioner:
+  name: ansible
+  env:
+    # molecule не добавляет каталог ролей в путь поиска: роль docker лежит в ansible/roles
+    ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..
+  inventory:
+    group_vars:
+      all:
+        # В плейбуке эти значения приходят из ansible/group_vars/all.yml; molecule его не читает.
+        # Роль создаёт сеть monitoring с этой подсетью и шлюзом.
+        monitoring_subnet: 172.30.0.0/24
+        monitoring_gateway: 172.30.0.1
+
+scenario:
+  name: default
+  test_sequence:
+    - dependency
+    - destroy
+    - syntax
+    - create
+    - converge
+    - idempotence
+    - verify
+    - destroy

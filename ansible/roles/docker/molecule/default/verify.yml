@@ -1,0 +1,41 @@
+---
+# Минимальная проверка (первый шаг): службы работают и демон отвечает.
+# Подробные проверки (настройки демона, сети, источник пакетов) — следующим шагом.
+- name: Verify — роль docker
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Состояние юнитов Docker
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+      register: docker_verify_units
+      loop:
+        - containerd.service
+        - docker.service
+
+    - name: Docker и containerd запущены и включены при загрузке
+      ansible.builtin.assert:
+        that:
+          - item.status.UnitFileState == 'enabled'
+          - item.status.ActiveState == 'active'
+        fail_msg: "{{ item.item }}: {{ item.status.UnitFileState }}, {{ item.status.ActiveState }}"
+        quiet: true
+      loop: "{{ docker_verify_units.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    # Ответ демона, а не только «юнит active»: клиент дошёл до dockerd через сокет
+    - name: Демон отвечает
+      ansible.builtin.command:
+        argv:
+          - docker
+          - version
+          - --format
+          - "{% raw %}{{.Server.Version}}{% endraw %}"
+      register: docker_verify_version
+      changed_when: false
+
+    - name: Версия демона
+      ansible.builtin.debug:
+        msg: "dockerd {{ docker_verify_version.stdout }}"

@@ -1,0 +1,8 @@
+---
+# Коллекции только для molecule: драйвер docker создаёт контейнер модулями community.docker и
+# подключается к нему через подключение community.docker.docker. Роли и плейбук их не используют.
+collections:
+  - name: community.docker
+    version: 5.4.0
+  - name: ansible.posix
+    version: 2.2.2

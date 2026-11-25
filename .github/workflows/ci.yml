@@ -100,15 +100,21 @@ jobs:
             exit 1
           fi
 
-  # Роль base по-настоящему применяется в контейнере с Debian 13 и systemd: molecule прогоняет её
-  # дважды (второй прогон не должен ничего менять) и проверяет итоговое состояние (sshd -T, nft,
-  # systemctl). ansible-lint видит только код, а здесь видно, что роль работает. Нужен Docker —
-  # на зеркале GitVerse job пропускается.
+  # Роли по-настоящему применяются в контейнере с Debian 13 и systemd: molecule прогоняет роль
+  # дважды (второй прогон не должен ничего менять) и проверяет итоговое состояние (base — sshd -T,
+  # nft, systemctl; docker — Docker в Docker). ansible-lint видит только код, а здесь видно, что роль
+  # работает. Одна проверка на роль; имя «Ansible — molecule (роль base)» осталось прежним, поэтому
+  # ruleset менять не пришлось — новая роль добавляется строкой в matrix. Нужен Docker — на зеркале
+  # GitVerse job пропускается.
   molecule:
-    name: Ansible — molecule (роль base)
+    name: Ansible — molecule (роль ${{ matrix.role }})
     if: github.server_url == 'https://github.com'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false   # падение одной роли не отменяет проверку другой
+      matrix:
+        role: [base, docker]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
@@ -123,7 +129,7 @@ jobs:
 
       # Коллекции для molecule (requirements.yml сценария) ставит сам molecule — шаг dependency
       - name: molecule test — создать контейнер, применить роль дважды, проверить, удалить
-        working-directory: ansible/roles/base
+        working-directory: ansible/roles/${{ matrix.role }}
         env:
           ANSIBLE_FORCE_COLOR: "1"
           PY_COLORS: "1"
