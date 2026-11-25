@@ -2,20 +2,24 @@
 # SIGHUP — штатный способ перечитать конфигурацию без перезапуска: метрики в памяти не теряются,
 # а при ошибке в файле программа остаётся на прежней конфигурации.
 # API перезагрузки (--web.enable-lifecycle) не включаем: он позволил бы и остановить Prometheus по HTTP.
+# Сигнал посылается изнутри контейнера (kill из busybox образа), а не через `docker compose kill`:
+# любой сигнал через API Docker, даже SIGHUP, помечает контейнер как «остановленный вручную»
+# (HasBeenManuallyStopped), и после перезагрузки сервера политика unless-stopped его не поднимает.
+# Так 25.11.2026 после перезагрузки для обновления ядра не запустились Prometheus и blackbox_exporter.
 - name: Перечитать конфигурацию Prometheus
   ansible.builtin.command:
-    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", kill, --signal, HUP, prometheus]
+    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", exec, --no-TTY, prometheus, kill, -HUP, "1"]
   changed_when: true
 
 - name: Перечитать конфигурацию blackbox_exporter
   ansible.builtin.command:
-    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", kill, --signal, HUP, blackbox]
+    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", exec, --no-TTY, blackbox, kill, -HUP, "1"]
   changed_when: true
 
 # Только если Alertmanager работал до этого прогона: только что созданный прочитал свежий файл сам,
 # а SIGHUP в первые мгновения после запуска, пока обработчик сигнала ещё не установлен, завершил бы процесс
 - name: Перечитать конфигурацию Alertmanager
   ansible.builtin.command:
-    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", kill, --signal, HUP, alertmanager]
+    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", exec, --no-TTY, alertmanager, kill, -HUP, "1"]
   changed_when: true
   when: "'alertmanager' in (monitoring_running.stdout_lines | default([]))"
