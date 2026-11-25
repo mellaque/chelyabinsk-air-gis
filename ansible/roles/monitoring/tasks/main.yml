@@ -363,3 +363,48 @@
       {%- endfor -%}
       {%- endfor -%}
       {{ total.rules }}
+
+# Контейнер, которому сигнал послан через API Docker (`docker kill`, в том числе SIGHUP), помечается
+# как «остановленный вручную», и после перезагрузки сервера unless-stopped его не поднимает.
+# Флаг не виден в `docker inspect`, только в состоянии контейнера в каталоге Docker.
+- name: Контейнеры мониторинга — идентификаторы
+  ansible.builtin.command:
+    argv: [docker, compose, -f, "{{ monitoring_dir }}/compose.yaml", ps, --all, --quiet, --no-trunc]
+  register: monitoring_container_ids
+  changed_when: false
+  check_mode: false
+  when: not ansible_check_mode
+
+- name: Каталог данных Docker
+  ansible.builtin.command:
+    argv: [docker, info, --format, "{% raw %}{{ .DockerRootDir }}{% endraw %}"]
+  register: monitoring_docker_root
+  changed_when: false
+  check_mode: false
+  when: not ansible_check_mode
+
+- name: Контейнеры мониторинга — состояние у Docker
+  ansible.builtin.slurp:
+    src: "{{ monitoring_docker_root.stdout }}/containers/{{ item }}/config.v2.json"
+  loop: "{{ monitoring_container_ids.stdout_lines | default([]) }}"
+  loop_control:
+    label: "{{ item[:12] }}"
+  register: monitoring_container_state
+  when: not ansible_check_mode
+
+- name: Контейнеры мониторинга поднимутся после перезагрузки сервера
+  ansible.builtin.assert:
+    that: monitoring_manually_stopped | length == 0
+    fail_msg: >-
+      Помечены как остановленные вручную и после перезагрузки не запустятся:
+      {{ monitoring_manually_stopped | join(', ') }}. Снять пометку: docker restart с этими именами
+      (остановленные — docker compose -f {{ monitoring_dir }}/compose.yaml up -d).
+      Причина обычно — docker kill / docker compose kill.
+    quiet: true
+  when: not ansible_check_mode
+  vars:
+    # Только имя и флаг: в файле состояния есть и переменные окружения контейнера
+    monitoring_manually_stopped: >-
+      {{ monitoring_container_state.results | default([])
+         | map(attribute='content') | map('b64decode') | map('from_json')
+         | selectattr('HasBeenManuallyStopped') | map(attribute='Name') | list }}
