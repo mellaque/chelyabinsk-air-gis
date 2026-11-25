@@ -20,8 +20,9 @@ platforms:
     dockerfile: image.j2
     pre_build_image: false
     buildargs:
-      # Digest индекса: годится и для amd64 (CI), и для arm64 (Mac)
-      BASE_IMAGE: debian:13-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
+      # Digest индекса: годится и для amd64 (CI), и для arm64 (Mac). Якорь &debian — тот же образ
+      # запускает внутренний Docker в verify.yml (один digest на файл, обновлять в одном месте)
+      BASE_IMAGE: &debian debian:13-slim@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2
     command: /sbin/init
     # systemd нужен доступ к cgroup; внутреннему dockerd — права на сети, мосты и правила iptables.
     # Контейнер привилегированный: это одноразовый тестовый стенд, а не сервер.
@@ -51,6 +52,8 @@ provisioner:
         # Роль создаёт сеть monitoring с этой подсетью и шлюзом.
         monitoring_subnet: 172.30.0.0/24
         monitoring_gateway: 172.30.0.1
+        # Образ, который verify.yml запускает во внутреннем Docker (проверка перезапуска демона)
+        docker_verify_image: *debian
 
 scenario:
   name: default

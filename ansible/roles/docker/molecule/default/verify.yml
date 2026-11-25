@@ -121,3 +121,119 @@
         that: docker_verify_group.stdout.split(':')[3] == ''
         fail_msg: "В группе docker: {{ docker_verify_group.stdout.split(':')[3] }}"
         quiet: true
+
+# Перезапуск демона — то же, что Docker видит при перезагрузке сервера: контейнеры останавливаются
+# и поднимаются снова по своей политике restart. Урок инцидента 25.11.2026 (docs/runbook-restore.md,
+# «Подводные камни»): контейнер, которому сигнал послали через API Docker (`docker kill`, даже SIGHUP),
+# считается остановленным вручную, и unless-stopped его не поднимает. Здесь проверяется и то, что
+# обычный контейнер поднимается, и само это поведение Docker: на нём держатся handlers роли monitoring
+# (SIGHUP изнутри контейнера) и её проверка флага. Если в новой версии Docker поведение изменится,
+# этот тест скажет об этом.
+- name: Verify — контейнеры после перезапуска Docker
+  hosts: all
+  gather_facts: false
+  become: true
+  vars_files:
+    - ../../defaults/main.yml   # docker_log_max_size, docker_log_max_file
+  vars:
+    docker_verify_containers:
+      - verify-restart   # обычный контейнер — должен подняться
+      - verify-killed    # получил SIGHUP через docker kill — не должен
+  tasks:
+    # verify можно запускать повторно (molecule verify): убираем контейнеры прошлого запуска
+    - name: Контейнеры прошлой проверки удалены
+      ansible.builtin.command:
+        argv: "{{ ['docker', 'rm', '--force'] + docker_verify_containers }}"
+      changed_when: false
+      failed_when: false
+
+    - name: Тестовый образ загружен
+      ansible.builtin.command:
+        argv: [docker, pull, --quiet, "{{ docker_verify_image }}"]
+      register: docker_verify_pull
+      until: docker_verify_pull is succeeded
+      retries: 3
+      delay: 10
+      changed_when: true
+
+    # Через общую сеть monitoring — заодно видно, что контейнер в сети роли реально запускается
+    - name: Тестовые контейнеры запущены с restart unless-stopped
+      ansible.builtin.command:
+        argv:
+          - docker
+          - run
+          - --detach
+          - --name
+          - "{{ item }}"
+          - --restart
+          - unless-stopped
+          - --network
+          - monitoring
+          - "{{ docker_verify_image }}"
+          - sleep
+          - infinity
+      loop: "{{ docker_verify_containers }}"
+      changed_when: true
+
+    # Настройки журналов из daemon.json попадают в каждый новый контейнер — видно только так
+    - name: Журнал тестового контейнера — драйвер и ротация
+      ansible.builtin.command:
+        argv:
+          - docker
+          - inspect
+          - --format
+          - "{% raw %}{{json .HostConfig.LogConfig}}{% endraw %}"
+          - verify-restart
+      register: docker_verify_logconfig
+      changed_when: false
+
+    - name: Журнал — драйвер local с ротацией из настроек роли
+      ansible.builtin.assert:
+        that:
+          - docker_verify_log.Type == 'local'
+          - docker_verify_log.Config['max-size'] == docker_log_max_size
+          - docker_verify_log.Config['max-file'] == docker_log_max_file
+        fail_msg: "{{ docker_verify_logconfig.stdout }}"
+        quiet: true
+      vars:
+        docker_verify_log: "{{ docker_verify_logconfig.stdout | from_json }}"
+
+    # sleep работает как PID 1 и обработчика SIGHUP не ставит — ядро такой сигнал ему не доставит,
+    # контейнер продолжит работать. Важен только флаг, который ставит сам вызов docker kill
+    - name: Сигнал через API Docker — как делали прежние handlers роли monitoring
+      ansible.builtin.command:
+        argv: [docker, kill, --signal, HUP, verify-killed]
+      changed_when: true
+
+    - name: Перезапуск Docker (как при перезагрузке сервера)
+      ansible.builtin.systemd_service:
+        name: docker
+        state: restarted
+
+    - name: Обычный контейнер снова работает
+      ansible.builtin.command:
+        argv: [docker, inspect, --format, "{% raw %}{{.State.Running}}{% endraw %}", verify-restart]
+      register: docker_verify_running
+      until: docker_verify_running.stdout == 'true'
+      retries: 10
+      delay: 3
+      changed_when: false
+
+    - name: Состояние контейнера после docker kill
+      ansible.builtin.command:
+        argv: [docker, inspect, --format, "{% raw %}{{.State.Running}}{% endraw %}", verify-killed]
+      register: docker_verify_killed
+      changed_when: false
+
+    - name: Контейнер после docker kill не поднялся — поведение, на котором держится роль monitoring
+      ansible.builtin.assert:
+        that: docker_verify_killed.stdout == 'false'
+        fail_msg: >-
+          Docker поднял контейнер, которому посылали docker kill. Значит, поведение изменилось:
+          пересмотреть проверку HasBeenManuallyStopped в роли monitoring.
+        quiet: true
+
+    - name: Тестовые контейнеры удалены
+      ansible.builtin.command:
+        argv: "{{ ['docker', 'rm', '--force'] + docker_verify_containers }}"
+      changed_when: true
