@@ -1,11 +1,39 @@
 ---
-# Минимальная проверка (первый шаг): службы работают и демон отвечает.
-# Подробные проверки (настройки демона, сети, источник пакетов) — следующим шагом.
+# Проверка результата: не «задачи выполнились», а «система в нужном состоянии» — так, как её видят
+# сами программы (apt, systemctl, docker info, docker network inspect), а не по файлам, которые
+# положила роль. Как в сценарии роли base.
 - name: Verify — роль docker
   hosts: all
   gather_facts: false
   become: true
+  vars_files:
+    - ../../defaults/main.yml   # те же пакеты, журналы и сети, что у роли
   tasks:
+    - name: Установленные пакеты
+      ansible.builtin.package_facts:
+
+    - name: Все пакеты роли установлены
+      ansible.builtin.assert:
+        that: item in ansible_facts.packages
+        fail_msg: "Не установлен пакет {{ item }}"
+        quiet: true
+      loop: "{{ docker_packages }}"
+
+    # Пакет с таким же именем мог бы прийти и из другого источника; apt показывает, откуда взята
+    # установленная версия (строка после «***»)
+    - name: Откуда установлен пакет docker-ce
+      ansible.builtin.command:
+        argv: [apt-cache, policy, docker-ce]
+      register: docker_verify_policy
+      changed_when: false
+
+    - name: Пакет docker-ce — из репозитория Docker, а не из Debian
+      ansible.builtin.assert:
+        that:
+          - docker_verify_policy.stdout is search('\*\*\* [^\n]+\n\s+\d+ https://download\.docker\.com/linux/debian ')
+        fail_msg: "{{ docker_verify_policy.stdout }}"
+        quiet: true
+
     - name: Состояние юнитов Docker
       ansible.builtin.systemd_service:
         name: "{{ item }}"
@@ -25,17 +53,71 @@
       loop_control:
         label: "{{ item.item }}"
 
-    # Ответ демона, а не только «юнит active»: клиент дошёл до dockerd через сокет
-    - name: Демон отвечает
+    # Ответ демона, а не только «юнит active»: клиент дошёл до dockerd через сокет.
+    # Заодно — настройки, которые демон реально применил из daemon.json
+    - name: Действующие настройки демона
       ansible.builtin.command:
         argv:
           - docker
-          - version
+          - info
           - --format
-          - "{% raw %}{{.Server.Version}}{% endraw %}"
-      register: docker_verify_version
+          - "{% raw %}{{json .}}{% endraw %}"
+      register: docker_verify_info
       changed_when: false
+
+    - name: Демон — драйвер журналов local, cgroup через systemd
+      ansible.builtin.assert:
+        that:
+          - docker_verify_info_json.LoggingDriver == 'local'
+          - docker_verify_info_json.CgroupDriver == 'systemd'
+        fail_msg: >-
+          LoggingDriver={{ docker_verify_info_json.LoggingDriver }},
+          CgroupDriver={{ docker_verify_info_json.CgroupDriver }}
+        quiet: true
+      vars:
+        docker_verify_info_json: "{{ docker_verify_info.stdout | from_json }}"
 
     - name: Версия демона
       ansible.builtin.debug:
-        msg: "dockerd {{ docker_verify_version.stdout }}"
+        msg: "dockerd {{ (docker_verify_info.stdout | from_json).ServerVersion }}"
+
+    - name: Общие сети Docker — подсеть и шлюз
+      ansible.builtin.command:
+        argv:
+          - docker
+          - network
+          - inspect
+          - --format
+          - "{% raw %}{{.Driver}}|{{range .IPAM.Config}}{{.Subnet}} {{.Gateway}}{{end}}{% endraw %}"
+          - "{{ item.name }}"
+      loop: "{{ docker_networks }}"
+      loop_control:
+        label: "{{ item.name }}"
+      register: docker_verify_networks
+      changed_when: false
+
+    # Подсеть и шлюз проверяются только там, где они заданы (monitoring); у proxy их выбирает Docker
+    - name: Общие сети созданы как заданы
+      ansible.builtin.assert:
+        that:
+          - item.stdout.split('|')[0] == 'bridge'
+          - item.item.subnet is not defined
+            or item.stdout.split('|')[1] == item.item.subnet ~ ' ' ~ item.item.gateway
+        fail_msg: "{{ item.item.name }}: {{ item.stdout }}"
+        quiet: true
+      loop: "{{ docker_verify_networks.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+
+    # Роль намеренно никого не добавляет в группу docker: членство в ней — root без пароля
+    - name: Группа docker
+      ansible.builtin.command:
+        argv: [getent, group, docker]
+      register: docker_verify_group
+      changed_when: false
+
+    - name: В группе docker никого нет
+      ansible.builtin.assert:
+        that: docker_verify_group.stdout.split(':')[3] == ''
+        fail_msg: "В группе docker: {{ docker_verify_group.stdout.split(':')[3] }}"
+        quiet: true
