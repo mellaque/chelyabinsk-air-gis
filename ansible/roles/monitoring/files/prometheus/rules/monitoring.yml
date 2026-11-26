@@ -47,6 +47,23 @@ groups:
           summary: "Alertmanager не может отправить уведомления ({{ $labels.integration }})"
           description: "Смотреть: docker logs monitoring-alertmanager-1, доступность ntfy.sh с сервера."
 
+      # Участок Prometheus → Alertmanager: алерт, который не удалось отправить, Prometheus отбрасывает
+      # (повторит только через resend-delay). AlertmanagerNotificationsFailing этого не видит — он про
+      # следующий участок, Alertmanager → ntfy. Окно — час: ошибки 26.11 шли раз в 3–20 минут и в
+      # коротком окне то появлялись, то пропадали. Порог 5 %: одна ошибка за час (Alertmanager
+      # пересоздали при выкатке) — около 2 %, алерта нет.
+      - alert: PrometheusNotificationsFailing
+        expr: |
+          rate(prometheus_notifications_errors_total[1h])
+            / (rate(prometheus_notifications_sent_total[1h]) + rate(prometheus_notifications_errors_total[1h]))
+            > 0.05
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Prometheus не может отправить часть алертов в Alertmanager"
+          description: "С ошибкой {{ $value | humanizePercentage }} отправок за час, эти алерты теряются. Смотреть: docker logs monitoring-prometheus-1."
+
       - alert: AlertmanagerConfigReloadFailed
         expr: alertmanager_config_last_reload_successful == 0
         for: 5m
