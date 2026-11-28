@@ -13,6 +13,7 @@ services:
       - --storage.tsdb.retention.time={{ monitoring_retention_time }}
       - --storage.tsdb.retention.size={{ monitoring_retention_size }}
       - --web.external-url={{ monitoring_prometheus_url }}
+      - --rules.alert.resend-delay={{ monitoring_alert_resend_delay }}
     volumes:
       # Монтируется каталог, а не файл: при обновлении файл заменяется новым, и контейнер
       # с примонтированным файлом продолжал бы видеть старый

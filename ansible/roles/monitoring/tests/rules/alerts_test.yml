@@ -160,6 +160,45 @@ tests:
               summary: "Alertmanager не может отправить уведомления (webhook)"
               description: "Смотреть: docker logs monitoring-alertmanager-1, доступность ntfy.sh с сервера."
 
+  # Как было 26.11: отправка раз в 90 с, около 10 % — с ошибкой (EOF)
+  - name: Prometheus теряет 10 % отправок в Alertmanager — алерт через 15 минут
+    interval: 1m
+    input_series:
+      - series: 'prometheus_notifications_sent_total{alertmanager="http://alertmanager:9093/api/v2/alerts", instance="127.0.0.1:9090", job="prometheus"}'
+        values: "0+0.6x60"
+      - series: 'prometheus_notifications_errors_total{alertmanager="http://alertmanager:9093/api/v2/alerts", instance="127.0.0.1:9090", job="prometheus"}'
+        values: "0+0.07x60"
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: PrometheusNotificationsFailing
+        exp_alerts: []
+      - eval_time: 30m
+        alertname: PrometheusNotificationsFailing
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              alertmanager: http://alertmanager:9093/api/v2/alerts
+              instance: 127.0.0.1:9090
+              job: prometheus
+            exp_annotations:
+              summary: "Prometheus не может отправить часть алертов в Alertmanager"
+              description: "С ошибкой 10.45% отправок за час, эти алерты теряются. Смотреть: docker logs monitoring-prometheus-1."
+
+  - name: Одна ошибка отправки за час (Alertmanager пересоздан при выкатке) алерта не вызывает
+    interval: 1m
+    input_series:
+      - series: 'prometheus_notifications_sent_total{alertmanager="http://alertmanager:9093/api/v2/alerts", instance="127.0.0.1:9090", job="prometheus"}'
+        values: "0+1x60"
+      - series: 'prometheus_notifications_errors_total{alertmanager="http://alertmanager:9093/api/v2/alerts", instance="127.0.0.1:9090", job="prometheus"}'
+        values: "0x20 1x40"
+    alert_rule_test:
+      - eval_time: 30m
+        alertname: PrometheusNotificationsFailing
+        exp_alerts: []
+      - eval_time: 60m
+        alertname: PrometheusNotificationsFailing
+        exp_alerts: []
+
   # --- Сервер -------------------------------------------------------------------------------------
   - name: Место на диске — 10 % свободно это warning, 3 % — ещё и critical; /boot с 78 % в норме
     interval: 1m
